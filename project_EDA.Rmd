@@ -1,0 +1,40 @@
+---
+title: "Project"
+author: "Group6"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+
+library(ezids)
+library(ggplot2)
+games=read.csv("C:/Users/srira/Documents/GitHub/Intro-to-DS-Group-6/Video games sales.csv")
+head(games,5)
+
+
+
+```
+
+```{r}
+
+games$Year_of_Release=as.integer(games$Year_of_Release,na.rm=TRUE)
+
+```
+
+**Distribution of games by year of Release**
+```{r}
+library(ggplot2)
+
+hist(games$Year_of_Release, breaks = 30, col = 'blue', xlab = 'Year of Release', ylab = 'Number of Games', main = 'Distribution of Games by Year of Release')
+
+
+```
+```{r}
+
+```
