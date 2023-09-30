@@ -14,17 +14,44 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(ezids)
 library(ggplot2)
-games=read.csv("C:/Users/srira/Documents/GitHub/Intro-to-DS-Group-6/Video games sales.csv")
+
+games=read.csv("~/Documents/GitHub/Intro-to-DS-Group-6/Video games sales.csv")
 head(games,5)
+```
 
 
+```{r}
+nrow(games)
+str(games)
+```
+```{r}
+unique(games$Platform) #need to convert platform into factor 27 different platforms
+unique(games$Genre)
+unique(games$Rating)
+
+length(unique(games$Name))#.  #11563 Names
+length(unique(games$Platform)) #31 platforms
+length(unique(games$Genre))  #13 genres
+length(unique(games$Publisher)) #583 publishers
+length(unique(games$Developer)) #1697 developers
+length(unique(games$Rating)) #9 categories of rating
+```
+```{r}
+sum(is.na(games$Critic_Count)) #8582 null values
+sum(is.na(games$Critic_Score))
+sum(is.na(games$User_Count)) #9129 null values
+sum(is.na(games$User_Score))
 
 ```
+
 
 ```{r}
 
 games$Year_of_Release=as.integer(games$Year_of_Release,na.rm=TRUE)
 
+```
+
+```{r}
 ```
 
 **Distribution of games by year of Release**
