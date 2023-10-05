@@ -1,0 +1,20 @@
+---
+title: "Data Cleaning"
+output: html_document
+---
+
+```{r}
+games<-read.csv('Video games sales.csv')
+
+nrow(games)
+```
+
+```{r}
+games<-na.omit(games)
+unique(games$Rating)
+games$Rating <- ifelse(games$Rating== "", NA,games$Rating )
+unique(games$Rating)
+games<-subset(games,games$Rating!="NA")
+games<-subset(games,games$Year_of_Release!="N/A")
+nrow(games)
+```
