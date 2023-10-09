@@ -43,34 +43,29 @@ sum(is.na(games$User_Count)) #9129 null values
 x<- sum(is.na(games$User_Score))
 x
 ```
+
+
 ```{r}
 
 ```
 
-```{r}
-
-games$Year_of_Release=as.integer(games$Year_of_Release,na.rm=TRUE)
-
-```
+#Null values cleaning 
 
 ```{r}
 games<-na.omit(games)
 unique(games$Rating)
-games$Rating <- ifelse( games$Rating== "", NA,games$Rating )
+games$Rating <- ifelse(games$Rating== "", NA,games$Rating )
 unique(games$Rating)
 games<-subset(games,games$Rating!="NA")
 games<-subset(games,games$Year_of_Release!="N/A")
 nrow(games)
-```
-
-**Distribution of games by year of Release**
-```{r}
-library(ggplot2)
-
-hist(games$Year_of_Release, breaks = 30, col = 'blue', xlab = 'Year of Release', ylab = 'Number of Games', main = 'Distribution of Games by Year of Release')
-
 
 ```
+#Critic_Count	User_Score
+
+
+
 ```{r}
+
 
 ```

@@ -8,6 +8,7 @@ games<-read.csv('Video games sales.csv')
 
 nrow(games)
 ```
+#cleaning null values
 
 ```{r}
 games<-na.omit(games)
@@ -17,4 +18,20 @@ unique(games$Rating)
 games<-subset(games,games$Rating!="NA")
 games<-subset(games,games$Year_of_Release!="N/A")
 nrow(games)
+```
+
+#Critic_Count	User_Score 
+
+```{r}
+library(ggplot2)
+ggplot(games, aes(x = games$User_Score)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "red", alpha = 0.7) +
+  ggtitle("Histogram") +
+  theme_minimal()
+
+ggplot(games, aes(y = games$User_Score))+geom_boxplot()
+
+qqnorm(games$User_Score)
+qqline(games$User_Score)
+
 ```
