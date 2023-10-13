@@ -1,0 +1,165 @@
+---
+title: "Testing"
+output: html_document
+date: "2023-10-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+
+```{r}
+games<-read.csv('~/Documents/GitHub/Intro-to-DS-Group-6/Video games sales.csv')
+str(games)
+```
+```{r}
+games$Platform<-as.factor(games$Platform)
+games$Year_of_Release<-as.factor(games$Year_of_Release)
+games$Genre<-as.factor(games$Genre)
+games$Publisher<-as.factor(games$Publisher)
+games$Developer<-as.factor(games$Developer)
+games$Rating<-as.factor(games$Rating)
+str(games)
+```
+```{r}
+nrow(games)
+sum(is.na(games$User_Score))
+sum(is.na(games$Critic_Score))
+```
+
+```{r}
+library(ggplot2)
+
+
+ggplot(games)+geom_bar(aes(x=Platform,fill=Platform))
+games %>% count(Platform)
+
+games %>% group_by(Platform) %>% summarise( 
+  NA_COUNT = sum(is.na(Critic_Score)))
+games %>% group_by(Platform) %>% summarise( 
+  NA_COUNT = sum(is.na(Critic_Count)))
+games %>% group_by(Platform) %>% summarise( 
+  NA_COUNT = sum(is.na(User_Count)))
+games %>% group_by(Platform) %>% summarise( 
+  NA_COUNT = sum(is.na(User_Score)))
+```
+
+```{r} 
+ggplot(games)+geom_bar(aes(x=Genre,fill=Genre))
+games %>% count(Genre)
+
+games %>% group_by(Genre) %>% summarise( 
+  Critic_score_Na_count = sum(is.na(Critic_Score)))
+games %>% group_by(Genre) %>% summarise( 
+  Critic_count_Na_count = sum(is.na(Critic_Count)))
+games %>% group_by(Genre) %>% summarise( 
+  user_count_Na_count = sum(is.na(User_Count)))
+games %>% group_by(Genre) %>% summarise( 
+  user_score_Na_count = sum(is.na(User_Score)))
+```
+
+
+
+
+```{r}
+ggplot(games)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release))
+games %>% count(Year_of_Release)
+
+games %>% group_by(Year_of_Release) %>% summarise( 
+  Na_count = sum(is.na(Critic_Score)))
+games %>% group_by(Year_of_Release) %>% summarise( 
+  Na_count = sum(is.na(Critic_Count)))
+games %>% group_by(Year_of_Release) %>% summarise( 
+  Na_count = sum(is.na(User_Count)))
+games %>% group_by(Year_of_Release) %>% summarise( 
+  Na_count = sum(is.na(User_Score)))
+```
+
+
+```{r}
+games<-na.omit(games)
+unique(games$Rating)
+games$Rating <- ifelse(games$Rating== "", NA,games$Rating )
+unique(games$Rating)
+games<-subset(games,games$Rating!="NA")
+games<-subset(games,games$Year_of_Release!="N/A")
+nrow(games)
+```
+```{r}
+ggplot(games)+geom_bar(aes(x=Platform,fill=Platform))
+games %>% count(Platform)
+
+ggplot(games)+geom_bar(aes(x=Genre,fill=Genre))
+games %>% count(Genre)
+
+ggplot(games)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release))
+games %>% count(Year_of_Release)
+```
+
+```{r}
+ggplot(data = games) +
+  geom_point(mapping = aes(x = Genre, y = NA_Sales))
+ggplot(data = games) +
+  geom_point(mapping = aes(x = Genre, y = EU_Sales))
+ggplot(data = games) +
+  geom_point(mapping = aes(x = Genre, y = Other_Sales))
+ggplot(data = games) +
+  geom_point(mapping = aes(x = Genre, y = Global_Sales))
+```
+
+```{r}
+qqnorm(games$Critic_Score)
+qqline(games$Critic_Score)
+
+qqnorm(games$User_Score)
+qqline(games$User_Score)
+
+```
+
+```{r}
+library(ezids)
+new_games<-outlierKD2(games,User_Score,rm=TRUE,histogram=TRUE,qqplt=TRUE,boxplt = TRUE)
+new_games<-outlierKD2(games,Critic_Score,rm=TRUE,histogram=TRUE,qqplt=TRUE,boxplt = TRUE)
+```
+
+```{r}
+qqnorm(new_games$Critic_Score)
+qqline(new_games$Critic_Score)
+
+qqnorm(new_games$User_Score)
+qqline(new_games$User_Score)
+```
+
+```{r}
+ggplot(new_games,aes(x=Critic_Score))+geom_histogram(bins=13)
+ggplot(new_games,aes(x=User_Score))+geom_histogram(bins=13)
+```
+
+
+```{r}
+nrow(new_games$User_Score==0)
+nrow(new_games$Critic_Score==0)
+```
+
+
+```{r}
+ggplot(new_games)+geom_col(aes(x=Genre,y=NA_Sales,fill=Genre))
+
+ggplot(new_games)+geom_col(aes(x=Genre,y=EU_Sales,fill=Genre))
+```
+
+
+
+```{r}
+ggplot(new_games)+geom_line(aes(x=Genre,y=NA_Sales,color=Genre))
+
+ggplot(new_games)+geom_line(aes(x=Genre,y=EU_Sales,color=Genre))
+```
