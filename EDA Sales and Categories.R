@@ -133,14 +133,15 @@ ggplot(games, aes(x = User_Score, y = Global_Sales, color = User_Score >= 7.5)) 
 
 # Iterating to find threshold
 
+# Create empty vectors to store results
+thresholds <- numeric()
+diff_means_values <- numeric()
+p_values <- numeric()
 
-best_rating_split <- 2.0
-best_diff_means <- 0
-best_p_value <- 1  
-
-# Define the minimum threshold difference in means and maximum p-value
-min_threshold_difference <- 0.3  # Adjust as needed
-max_p_value <- 0.05  # Adjust as needed
+# Initialize variables to track the best result
+best_rating_threshold <- NA
+best_diff_means <- -Inf
+best_p_value <- 1  # Initialize with a value above 0.05
 
 # Iterate over user rating thresholds from 4.0 to 8.0 in 0.1 increments
 for (rating_threshold in seq(4.0, 8.0, by = 0.1)) {
@@ -158,23 +159,41 @@ for (rating_threshold in seq(4.0, 8.0, by = 0.1)) {
   # Perform a t-test for the two groups with unequal variances
   t_test_result <- t.test(rating_above$Global_Sales, rating_below$Global_Sales, var.equal = FALSE)
   
-  # Check if the p-value is below the maximum
-  if (t_test_result$p.value < max_p_value) {
-    # Check if the difference in means is greater than the best result
-    if (diff_means > best_diff_means) {
-      best_rating_split <- rating_threshold
-      best_diff_means <- diff_means
-      best_p_value <- t_test_result$p.value
-    }
+  # Store the results in vectors
+  thresholds <- c(thresholds, rating_threshold)
+  diff_means_values <- c(diff_means_values, diff_means)
+  p_values <- c(p_values, t_test_result$p.value)
+  
+  # Check if the result is better than the current best result
+  if (diff_means > best_diff_means && t_test_result$p.value < 0.05) {
+    best_diff_means <- diff_means
+    best_p_value <- t_test_result$p.value
+    best_rating_threshold <- rating_threshold
   }
 }
 
 # Print the best result
-cat("Best rating split with the highest difference in means and p-value below", max_p_value, "is:", best_rating_split, "\n")
+cat("Best rating split with the highest mean difference and p-value below 0.05 is:", best_rating_threshold, "\n")
 cat("Mean Difference in Sales:", best_diff_means, "\n")
 cat("P-Value for the T-Test:", best_p_value, "\n")
 
+# Plot the threshold vs. rating
+plot(thresholds, diff_means_values, type = "l", col = "blue", xlab = "Rating Threshold", ylab = "Mean Difference in Sales")
+
+# Create a new plot for p-value vs. rating
+par(mar = c(5, 5, 4, 5))  # Adjust margin for labels
+plot(thresholds, -log10(p_values), type = "l", col = "red", xlab = "Rating Threshold", ylab = "-log10(P-Value)")
+abline(h = -log10(0.05), col = "red")
 
 
+#NA Sales vs Global Sales
+
+# Calculate Rest of the World Sales
+games$ROW_Sales <- games$Global_Sales - games$NA_Sales
+
+colors <- c("Action" = "red", "Adventure" = "blue", "Sports" = "green", "Shooter" = "orange", "Role-Playing" = "purple", "Misc" = "cyan", "Platform" = "magenta", "Fighting" = "brown", "Simulation" = "pink", "Strategy" = "gray")
+
+plot(games$NA_Sales, games$JP_Sales, xlab = "NA Sales", ylab = "Rest of the World Sales", main = "Scatter Plot: NA Sales vs Ex-US Sales", col = colors[games$Genre])
+legend("topright", legend = unique(games$Genre), fill = colors[unique(games$Genre)])
 
 
