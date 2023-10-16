@@ -29,7 +29,19 @@ ggplot(games, aes(x = games$User_Score)) +
   ggtitle("Histogram") +
   theme_minimal()
 
-ggplot(games, aes(y = games$User_Score))+geom_boxplot()
+custom_colors <- c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728")
+
+# Create a custom star-shaped point
+star_point <- data.frame(x = 0, y = 0)
+
+# Create an attractive box plot with outliers as stars
+ggplot(games, aes(y = User_Score)) +
+  geom_boxplot(color = "blue", fill = "lightblue", alpha = 0.7) +
+  geom_point(data = star_point, aes(x = x, y = y), shape = 8, size = 2, color = custom_colors[2]) +
+  theme_minimal() +
+  scale_color_manual(values = custom_colors) +
+  labs(y = "User Score") +
+  ggtitle("Box Plot of User Scores ")
 
 qqnorm(games$User_Score)
 qqline(games$User_Score)
