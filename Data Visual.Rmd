@@ -37,7 +37,7 @@ sum(is.na(games$Critic_Score))
 
 ```{r}
 library(ggplot2)
-
+library(dplyr)
 
 ggplot(games)+geom_bar(aes(x=Platform,fill=Platform))
 games %>% count(Platform)
@@ -93,15 +93,72 @@ games<-subset(games,games$Rating!="NA")
 games<-subset(games,games$Year_of_Release!="N/A")
 nrow(games)
 ```
+
 ```{r}
-ggplot(games)+geom_bar(aes(x=Platform,fill=Platform))
-games %>% count(Platform)
 
-ggplot(games)+geom_bar(aes(x=Genre,fill=Genre))
-games %>% count(Genre)
+games%>%group_by(Platform)
+cnt<-games%>%group_by(Platform)%>%summarise(cnt=n())
+cnt<- cnt%>%arrange(desc(cnt))
+cnt
+data <- cnt[order(cnt$cnt),decreasing=TRUE ]
 
-ggplot(games)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release))
-games %>% count(Year_of_Release)
+# Create a bar graph in ascending order
+ggplot(data, aes(x = reorder(Platform, cnt), y = cnt,fill=Platform)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Bar Graph Sorted in Ascending Order") +
+  xlab("Category") +
+  ylab("Frequency (Count)") +
+  theme_minimal()
+
+
+```
+
+```{r}
+games%>%group_by(Genre)
+cnt<-games%>%group_by(Genre)%>%summarise(cnt=n())
+cnt<- cnt%>%arrange(desc(cnt))
+cnt
+data <- cnt[order(cnt$cnt),decreasing=TRUE ]
+
+# Create a bar graph in ascending order
+ggplot(data, aes(x = reorder(Genre, cnt), y = cnt,fill=Genre)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Bar Graph Sorted in Ascending Order") +
+  xlab("Category") +
+  ylab("Frequency (Count)") +
+  theme_minimal()
+```
+
+```{r}
+games%>%group_by(Year_of_Release)
+cnt<-games%>%group_by(Year_of_Release)%>%summarise(cnt=n())
+cnt<- cnt%>%arrange(desc(cnt))
+cnt
+data <- cnt[order(cnt$cnt),increasing=TRUE ]
+
+# Create a bar graph in ascending order
+ggplot(data, aes(x = reorder(Year_of_Release, cnt), y = cnt,fill=Year_of_Release)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Bar Graph Sorted in Ascending Order") +
+  xlab("Category") +
+  ylab("Frequency (Count)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+```{r}
+ga<-games%>%group_by(Year_of_Release)%>%summarise(Global_Sales=mean(Global_Sales))
+ga
+cnt<- ga%>%arrange(desc(Global_Sales))
+cnt
+data <- cnt[order(cnt$Global_Sales),increasing=TRUE ]
+
+ggplot(data, aes(x = reorder(Year_of_Release, Global_Sales), y = Global_Sales,fill=Year_of_Release)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Bar Graph Sorted in Ascending Order") +
+  xlab("Category") +
+  ylab("Frequency (Count)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
 ```
 
 ```{r}
@@ -116,7 +173,7 @@ ggplot(data = games) +
 ```
 
 ```{r}
-qqnorm(games$Critic_Score)
+qqnorm(games$Critic_Score,main="QQplot of Critic Score")
 qqline(games$Critic_Score)
 
 qqnorm(games$User_Score)
@@ -127,8 +184,19 @@ qqline(games$User_Score)
 ```{r}
 library(ezids)
 new_games<-outlierKD2(games,User_Score,rm=TRUE,histogram=TRUE,qqplt=TRUE,boxplt = TRUE)
+new_games
 new_games<-outlierKD2(games,Critic_Score,rm=TRUE,histogram=TRUE,qqplt=TRUE,boxplt = TRUE)
+new_games
 ```
+
+
+```{r}
+new_games<-na.omit(new_games)
+ggplot(new_games,aes(y=Critic_Score))+geom_boxplot(color = "blue", fill = "lightblue", alpha = 0.7)+labs(title="Boxplot Of Critic score")
+
+ggplot(new_games,aes(x=Critic_Score))+geom_histogram(binwidth =5 ,fill='blue',color='black')+labs(title="Histogram Of Critic score",x='Critic_Score')
+```
+
 
 ```{r}
 qqnorm(new_games$Critic_Score)
@@ -154,6 +222,8 @@ nrow(new_games$Critic_Score==0)
 ggplot(new_games)+geom_col(aes(x=Genre,y=NA_Sales,fill=Genre))
 
 ggplot(new_games)+geom_col(aes(x=Genre,y=EU_Sales,fill=Genre))
+
+ggplot(new_games)+geom_col(aes(x=Genre,y=Global_Sales,fill=Genre))
 ```
 
 
@@ -163,3 +233,18 @@ ggplot(new_games)+geom_line(aes(x=Genre,y=NA_Sales,color=Genre))
 
 ggplot(new_games)+geom_line(aes(x=Genre,y=EU_Sales,color=Genre))
 ```
+
+
+```{r}
+ggplot(new_games)+geom_col(aes(x=Year_of_Release,y=Global_Sales,fill=Year_of_Release))
+
+ggplot(new_games)+geom_col(aes(x=Year_of_Release,y=EU_Sales,fill=Year_of_Release))
+```
+
+```{r}
+my_plot <-ggplot(new_games)+geom_col(aes(x=Year_of_Release,y=Global_Sales,fill=Year_of_Release))
+
+```
+
+
+```{r}
