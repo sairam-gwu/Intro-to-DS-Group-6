@@ -344,16 +344,125 @@ legend("topright", legend = unique(games$Genre), fill = colors[unique(games$Genr
 
 
 
+
+
+
 #----------------------------------------------------------------------
-# Repeating the Hypothesis tests with outliers removed for sales 
+# Repeating the Hypothesis tests and EDA with outliers removed for sales 
+
+outlierKD2(games,Global_Sales,rm=FALSE,hist=TRUE,boxplt=TRUE,qqplt=TRUE)
 
 
 games_final= outlierKD2(games,Global_Sales,rm=TRUE,hist=FALSE)
-
-
 games_final<-na.omit(games_final)
-nrow(games_final)
 
+
+
+
+
+
+ggplot(data = games_final, aes(x = reorder(Genre, -table(Genre)[Genre]), fill = Genre)) +
+  geom_bar() +
+  labs(title = "Frequency Distribution of Genres",
+       x = "Genre",
+       y = "Frequency") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+  
+ggplot(data = games_final, aes(x = reorder(Platform, -table(Platform)[Platform]), fill = Platform)) +
+  geom_bar() +
+  labs(title = "Frequency Distribution of Platforms",
+       x = "Platform",
+       y = "Frequency") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+
+
+
+sales_by_year <- aggregate(Global_Sales ~ Year_of_Release, data = games_final, FUN = mean)
+
+# Create a bar plot
+ggplot(sales_by_year, aes(x = Year_of_Release, y = Global_Sales)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(
+    title = "Average Global Sales by Year of Release",
+    x = "Year of Release",
+    y = "Average Global Sales"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+sales_by_year <- aggregate(Global_Sales ~ Year_of_Release, data = games_final, FUN = sum)
+
+# Create a bar plot
+ggplot(sales_by_year, aes(x = Year_of_Release, y = Global_Sales)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(
+    title = "Average Global Sales by Year of Release",
+    x = "Year of Release",
+    y = "Average Global Sales"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#--------------------------------------------------------------------------------------------------------------------
+#USer Score
+
+
+ggplot(data = games_final, mapping = aes(x = User_Score)) +
+  geom_histogram(fill = "skyblue", color = "black", bins = 12) +  
+  labs(
+    title = "Distribution of User Score",
+    x = "User Score",
+    y = "Frequency"
+  ) +
+  theme_minimal() +  
+  theme(plot.title = element_text(hjust = 0.5))  
+
+
+
+
+
+
+ggplot(data = games_final, mapping = aes(y = User_Score)) +
+  geom_boxplot(fill = "orange", color = "black") +  
+  labs(
+    title = "Boxplot of User Scores",
+    y = "User Score"
+  ) +
+  theme_minimal() +  
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+
+
+#--------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#----------------
 
 
 ggplot(data = games_final, mapping = aes(x = Global_Sales)) +
@@ -369,29 +478,135 @@ ggplot(data = games_final, mapping = aes(x = Global_Sales)) +
 
 
 
+
+ggplot(data = games_final, mapping = aes(y = Global_Sales)) +
+  geom_boxplot(fill = "orange", color = "black") +  
+  labs(
+    title = "Boxplot of Global Sales",
+    y = "Global Sales"
+  ) +
+  theme_minimal() +  
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+qqplot_data <- qqnorm(games_final$Global_Sales, plot = FALSE)
+qqplot_data <- data.frame(Theoretical = qqplot_data$x, Observed = qqplot_data$y)
+
+
+ggplot(qqplot_data, aes(x = Theoretical, y = Observed)) +
+  geom_point(shape = 1) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
+  labs(
+    title = "QQ Plot of Global Sales",
+    x = "Theoretical Quantiles",
+    y = "Sample Quantiles"
+  )
+
 #------------------
 
 
 
 
+#----------------------------------------------------------------------------------------------------------------
+# SMART Q - Confidence interval for Shooter game ratings
+
+subset_data <- subset(games_final,games_final$Genre == 'Shooter' & games_final$User_Score >= 8.0)
+shooter_data <- subset(games_final,games_final$Genre == 'Shooter')
 
 
+sample_proportion <- nrow(subset_data) / nrow(shooter_data)
+
+confidence_level <- 0.95
+
+standard_error <- sqrt((sample_proportion * (1 - sample_proportion)) / nrow(shooter_data))
+
+df <- nrow(shooter_data) - 1  # Degrees of freedom
+t_critical <- qt(1 - (1 - confidence_level) / 2, df)  # t-critical value
+margin_of_error <- t_critical * standard_error
+
+# Calculate the confidence interval
+lower_bound <- sample_proportion - margin_of_error
+upper_bound <- sample_proportion + margin_of_error
+
+# Print the results
+cat("Sample Proportion:", sample_proportion, "\n")
+cat("95% Confidence Interval :", lower_bound, "to", upper_bound, "\n")
+
+x <- seq(sample_proportion - 4 * standard_error, sample_proportion + 4 * standard_error, length = 1000)
+
+
+y <- dt((x - sample_proportion) / standard_error, df) 
+
+# Create a data frame for plotting
+plot_data <- data.frame(x = x, y = y)
+
+
+
+ggplot(plot_data, aes(x = x, y = y)) +
+  geom_line() +
+  geom_vline(xintercept = c(lower_bound, upper_bound), color = "blue", linetype = "dashed", size = 1) +
+  geom_ribbon(data = plot_data[plot_data$x >= lower_bound & plot_data$x <= upper_bound, ], aes(x = x, ymin = 0, ymax = y), fill = "pink", alpha = 0.5) +
+  labs(
+    title = "Sample Distribution for the propotion of game in the Shooter Genre with a rating >=8.0",
+    x = "Proportion of Shooter Games with User Score > 8.0",
+    y = "Probability Density"
+  )+
+  theme_minimal()
+
+
+
+
+#------------------------------------------------------------------------------------------------------------------
+
+
+high_rated_data <- subset(games_final,games_final$User_Score >= 8.0)
+
+
+overall_proportion <- nrow(high_rated_data) / nrow(games_final)
+
+cat("Sample proportion is ",overall_proportion)
+
+
+
+
+
+#-----------------------------------------------------------------------------------------------------------------
 # SMART Q - Threshold Rating
 
 
+rating_above <- subset(games_final, games_final$User_Score >= 7.5)
+rating_below <- subset(games_final, games_final$User_Score < 7.5)
+
+# Calculate the sample means
+mean_sales_above <- mean(rating_above$Global_Sales)
+mean_sales_below <- mean(rating_below$Global_Sales)
+
+# Calculate the difference in means
+diff_means <- mean_sales_above - mean_sales_below
+
+# Perform a t-test for the two groups with unequal variances
+t_test_result <- t.test(rating_above$Global_Sales, rating_below$Global_Sales, var.equal = FALSE)
+
+cat("Mean difference is:", diff_means, "\n")
+cat("P-Value for the T-Test:", t_test_result$p.value, "\n")
 
 
-# Create empty vectors to store results
+
+
+
+
+#-----------------------------------------------------------------------------------------------------------------
+
+#Iterating to find threshold
+
 thresholds <- numeric()
 diff_means_values <- numeric()
 p_values <- numeric()
 
-# Initialize variables to track the best result
 best_rating_threshold <- NA
 best_diff_means <- -Inf
 best_p_value <- 1  # Initialize with a value above 0.05
 
-# Iterate over user rating thresholds from 4.0 to 8.0 in 0.1 increments
+
 for (rating_threshold in seq(4.0, 8.5, by = 0.1)) {
   # Subset data for games with user scores above and below the threshold
   rating_above <- subset(games_final, games_final$User_Score >= rating_threshold)
@@ -429,7 +644,6 @@ cat("P-Value for the T-Test:", best_p_value, "\n")
 
 
 #-- Visually showing the result
-
 plot(
   thresholds, 
   diff_means_values, 
@@ -438,8 +652,8 @@ plot(
   xlab = "Rating Threshold", 
   ylab = "Mean Difference in Sales",
   main = "Threshold vs. Mean Difference in Sales",
-  xlim = c(4, 8),
-  ylim = c(max(diff_means_values)*0.5, max(diff_means_values)*1.1)
+  xlim = c(3.8, 8),
+  ylim = c(max(diff_means_values) * 0.5, max(diff_means_values) * 1.1)
 )
 
 # Label points with maximum mean difference
@@ -451,6 +665,10 @@ text(
   pos = 3,
   col = "blue"
 )
+
+
+
+
 
 
 
@@ -468,17 +686,25 @@ plot(
   ylim = c(0, max(-log10(p_values)) + 2)
 )
 
-#-------
 
 
-ggplot(games_final, aes(x = Critic_Score, y = Global_Sales, color = Critic_Score >= 75)) +
+
+#-----------------------------------------------------------------------------------------------------------------
+
+
+ggplot(games_final, aes(x = User_Score, y = Global_Sales, color = User_Score >= 4.1)) +
   geom_point() +
-  scale_color_manual(values = c("red", "green")) +
-  labs(x = "User Score", y = "Global Sales", title = "Scatter Plot of User Score vs. Global Sales") +
-  guides(color = guide_legend(title = "User Score greater than 7.5")) +
+  scale_color_manual(values = c("red", "green"), 
+                     breaks = c(FALSE, TRUE), 
+                     labels = c("< 4.1", ">= 4.1")) +
+  labs(x = "User Score", y = "Global Sales (Millions)", title = "User Score vs. Global Sales") +
+  guides(color = guide_legend(title = "User Score")) +
   theme_minimal()
 
 
+correlation <- cor(games_final$User_Score, games_final$Global_Sales)
+
+cat(" The correlation is : ",correlation)
 
 
 
