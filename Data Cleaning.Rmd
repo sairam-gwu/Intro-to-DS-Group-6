@@ -26,7 +26,8 @@ nrow(games)
 library(ggplot2)
 ggplot(games, aes(x = games$User_Score)) +
   geom_histogram(binwidth = 0.5, fill = "blue", color = "red", alpha = 0.7) +
-  ggtitle("Histogram") +
+  ggtitle("Userscore Histogram") +
+  labs(x="UserScore")+
   theme_minimal()
 
 custom_colors <- c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728")
@@ -43,7 +44,7 @@ ggplot(games, aes(y = User_Score)) +
   labs(y = "User Score") +
   ggtitle("Box Plot of User Scores ")
 
-qqnorm(games$User_Score)
+qqnorm(games$User_Score,main="QQplot for UseScore")
 qqline(games$User_Score)
 
 ```

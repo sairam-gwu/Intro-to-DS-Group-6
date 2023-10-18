@@ -17,7 +17,7 @@ When you click the **Knit** button a document will be generated that includes bo
 
 
 ```{r}
-games<-read.csv('~/Documents/GitHub/Intro-to-DS-Group-6/Video games sales.csv')
+games<-read.csv('Video games sales.csv')
 str(games)
 ```
 ```{r}
@@ -39,7 +39,7 @@ sum(is.na(games$Critic_Score))
 library(ggplot2)
 library(dplyr)
 
-ggplot(games)+geom_bar(aes(x=Platform,fill=Platform))
+ggplot(games)+geom_bar(aes(x=Platform,fill=Platform))+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 games %>% count(Platform)
 
 games %>% group_by(Platform) %>% summarise( 
@@ -53,7 +53,7 @@ games %>% group_by(Platform) %>% summarise(
 ```
 
 ```{r} 
-ggplot(games)+geom_bar(aes(x=Genre,fill=Genre))
+ggplot(games)+geom_bar(aes(x=Genre,fill=Genre))+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 games %>% count(Genre)
 
 games %>% group_by(Genre) %>% summarise( 
@@ -70,7 +70,7 @@ games %>% group_by(Genre) %>% summarise(
 
 
 ```{r}
-ggplot(games)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release))
+ggplot(games)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release))+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 games %>% count(Year_of_Release)
 
 games %>% group_by(Year_of_Release) %>% summarise( 
@@ -126,7 +126,7 @@ ggplot(data, aes(x = reorder(Genre, cnt), y = cnt,fill=Genre)) +
   labs(title = "Bar Graph Sorted in Ascending Order") +
   xlab("Category") +
   ylab("Frequency (Count)") +
-  theme_minimal()
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ```
 
 ```{r}
