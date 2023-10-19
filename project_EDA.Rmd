@@ -61,7 +61,7 @@ games<-subset(games,games$Year_of_Release!="N/A")
 nrow(games)
 
 ```
-##Critic_Count	User_Score
+#Critic_Count	User_Score
 
 
 
