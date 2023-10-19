@@ -49,7 +49,7 @@ x
 
 ```
 
-##Null values cleaning 
+#Null values cleaning 
 
 ```{r}
 games<-na.omit(games)
@@ -61,7 +61,7 @@ games<-subset(games,games$Year_of_Release!="N/A")
 nrow(games)
 
 ```
-#Critic_Count	User_Score
+##Critic_Count	User_Score
 
 
 
