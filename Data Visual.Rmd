@@ -242,7 +242,7 @@ ggplot(new_games)+geom_col(aes(x=Year_of_Release,y=EU_Sales,fill=Year_of_Release
 ```
 
 ```{r}
-my_plot <-ggplot(new_games)+geom_col(aes(x=Year_of_Release,y=Global_Sales,fill=Year_of_Release))
+my_plot <-ggplot(new_games)+geom_col(aes(x=Year_of_Release,y=Global_Sales,fill=Year_of_Release)
 
 ```
 
