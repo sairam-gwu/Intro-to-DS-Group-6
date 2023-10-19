@@ -1,6 +1,9 @@
 
 library(ezids)
 library(ggplot2)
+library(dplyr)
+library(tidyr)
+
 games=read.csv("Video games sales.csv")
 head(games,5)
 
@@ -13,6 +16,8 @@ unique(games$Rating)
 games<-subset(games,games$Rating!="NA")
 games<-subset(games,games$Year_of_Release!="N/A")
 nrow(games)
+
+
 
 ggplot(data=games, mapping=aes(x=Global_Sales)) +
   geom_histogram(fill = "pink", bins = 20) +
@@ -380,7 +385,8 @@ ggplot(data = games_final, aes(x = reorder(Platform, -table(Platform)[Platform])
 
 
 
-
+#-----------------------------------------------------------------------------------------------------------------
+# Smart Question 3 - Trend of Global sales by year of release
 
 sales_by_year <- aggregate(Global_Sales ~ Year_of_Release, data = games_final, FUN = mean)
 
@@ -402,10 +408,28 @@ sales_by_year <- aggregate(Global_Sales ~ Year_of_Release, data = games_final, F
 ggplot(sales_by_year, aes(x = Year_of_Release, y = Global_Sales)) +
   geom_bar(stat = "identity", fill = "skyblue") +
   labs(
-    title = "Average Global Sales by Year of Release",
+    title = "Total Global Sales by Year of Release",
     x = "Year of Release",
-    y = "Average Global Sales"
+    y = "Total Global Sales"
   ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+max_platform <- games_final %>%
+  group_by(Year_of_Release, Platform) %>%
+  summarise(Total_Sales = sum(Global_Sales)) %>%
+  top_n(1, Total_Sales)
+
+
+ggplot(data = max_platform, aes(x = Year_of_Release, y = Total_Sales, fill = Platform)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Total Global Sales by Year for the best performing platform",
+    x = "Year of Release",
+    y = "Total Global Sales"
+  )+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 #--------------------------------------------------------------------------------------------------------------------
@@ -706,14 +730,113 @@ correlation <- cor(games_final$User_Score, games_final$Global_Sales)
 
 cat(" The correlation is : ",correlation)
 
+#-------------------------------------------------------------------------------------------------------------------
+# Misc Scatter Plots
+
+
+ggplot(games_final, aes(x = Year_of_Release, y = Genre, color = Genre)) +
+  geom_point(position = position_jitter(w = 0.2, h = 0.1), size = 3) +
+  labs(title = "Scatter Plot of Developer vs. Platform (Colored by Genre)") +
+  theme_minimal() +
+  theme(legend.position = "right") +
+  scale_color_brewer(palette = "Set1")
+
+
+genre_counts <- games_final %>%
+  group_by(Year_of_Release, Genre) %>%
+  summarize(Count = n()) %>%
+  ungroup()
+
+# Create the bubble chart
+bubble_chart <- ggplot(genre_counts, aes(x = Year_of_Release, y = Genre, size = Count, color = Genre)) +
+  geom_point(alpha = 0.7) +
+  scale_size_continuous(range = c(3, 20)) +
+  labs(title = "Popular Genres by Year",
+       x = "Year of Release",
+       y = "Genre",
+       size = "Count by Year") +
+  theme_minimal()
+
+# Print the bubble chart
+print(bubble_chart)
 
 
 
 
 
+genre_counts <- games_final %>%
+  group_by(Year_of_Release, Genre) %>%
+  summarize(Count = n()) %>%
+  ungroup()
+
+# Create the stacked column chart
+ggplot(genre_counts, aes(x = Year_of_Release, y = Count, fill = Genre)) +
+  geom_col(position = "stack") +
+  labs(title = "Popular Genres by Year",
+       x = "Year of Release",
+       y = "Count by Year")  +  # You can choose a different color palette
+  theme_minimal()
+
+# Correlation plots 
+
+numerical_cols <- games_final[, c('Critic_Score', 'Global_Sales', 'User_Score')]
+
+# Compute the correlation matrix
+correlation_matrix <- cor(numerical_cols)
+
+# Reshape the correlation matrix
+correlation_data <- as.data.frame(correlation_matrix)
+correlation_data$variable <- rownames(correlation_data)
+correlation_data_long <- pivot_longer(correlation_data, cols = -variable, names_to = "Variable", values_to = "Correlation")
+
+# Create a heatmap of the correlation matrix
+ggplot(correlation_data_long, aes(variable, Variable, fill = Correlation)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "red", high = "blue") +
+  theme_minimal() +
+  labs(title = "Correlation Matrix")
+
+
+# Boxplots by Genre for Sales
+ggplot(games_final, aes(x = Genre, y = Global_Sales)) +
+  geom_boxplot(fill = "lightblue", color = "blue") +
+  labs(title = "Boxplot of Global Sales by Genre",
+       x = "Genre",
+       y = "Global Sales (in millions)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
 
 
+# Boxplots by Platform for Sales
+ggplot(games_final, aes(x = Platform, y = Global_Sales)) +
+  geom_boxplot(fill = "lightblue", color = "blue") +
+  labs(title = "Boxplot of Global Sales by Platform",
+       x = "Platform",
+       y = "Global Sales (in millions)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+#Scatter for scores colored by genre
+ggplot(games_final, aes(x = Critic_Score, y = User_Score, color = Genre)) +
+  geom_point() +
+  labs(title = "Scatter Plot of User Score vs. Critic Score (Colored by Genre)",
+       x = "Critic Score",
+       y = "User Score") +  
+  theme_minimal()
+
+
+ggplot(games_final, aes(x = Critic_Score, y = User_Score, color = Global_Sales)) +
+  geom_point() +
+  labs(title = "Scatter Plot of User Score vs. Critic Score (Colored by Global Sales)",
+       x = "Critic Score",
+       y = "User Score") +
+  scale_color_gradient(low = "lightblue", high = "darkblue") +
+  theme_minimal()
+
+
+#
 
 
