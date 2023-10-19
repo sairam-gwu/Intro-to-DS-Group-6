@@ -203,7 +203,7 @@ qqnorm(new_games$Critic_Score)
 qqline(new_games$Critic_Score)
 
 qqnorm(new_games$User_Score)
-qqline(new_games$User_Score)
+qqline(new_games$User_Score
 ```
 
 ```{r}
