@@ -21,19 +21,6 @@ nrow(games)
 ```
 
 #Critic_Count	User_Score 
-```{r}
-library(ggplot2)
-ggplot(games, aes(x = games$Critic_Count)) +
-  geom_histogram(binwidth = 0.5, fill = "blue", color = "red", alpha = 0.7) +
-  ggtitle("critic count Histogram") +
-  labs(x="critic count")+
-  theme_minimal()
-
-
-```
-
-
-
 
 ```{r}
 library(ggplot2)
