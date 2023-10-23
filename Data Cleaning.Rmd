@@ -50,12 +50,12 @@ qqline(games$User_Score)
 ```
 
 ```{r}
-```{r}
 library(ggplot2)
 
-critic_count_box<-ggplot(games,aes(y=Critic_Score))+geom_boxplot()
-critic_count_hist<-ggplot(games,aes(x=Critic_Score))+geom_histogram(binwidth =5 ,fill='red',color='black')
+ggplot(games,aes(y=Critic_Score))+geom_boxplot()
+ggplot(games,aes(x=Critic_Score))+geom_histogram(binwidth =5 ,fill='red',color='black')
 qqnorm(games$Critic_Score)
 qqline(games$Critic_Score)
 ```
-```
+
+
