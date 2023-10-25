@@ -5,7 +5,19 @@ date: "`r Sys.Date()`"
 output:
   html_document:
     code_folding: hide
-
+    number_sections: false
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+    theme: lumen
+    css: |
+      body {
+        background-color: #0074e4; /* Blue background */
+        color: #ffffff; /* White text */
+      }
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
 ---
 
 ```{r setup, include=FALSE}
@@ -13,7 +25,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # EDA ANALYSIS
-
+## Pre Analysis
 ```{r}
 games<-read.csv('Video games sales.csv')
 str(games)
@@ -101,7 +113,7 @@ games<-subset(games,games$Year_of_Release!="N/A")
 nrow(games)
 
 ```
-
+## User Score
 
 ```{r}
 library(ggplot2)
@@ -114,9 +126,11 @@ ggplot(games, aes(x = games$User_Score)) +
 ```
 
 **User-Score:** 
+
 *User score is a measure of how much users like a video game. It is typically calculated by averaging user ratings from various sources, such as review websites and social media. User scores can range from 0 to 10, with a higher score indicating that the game is more popular and well-liked.*
 
-*he user score histogram you shows that the game has a relatively normal distribution of user scores.The histogram also shows that the game has a relatively high average user score of around 7.5. This indicates that the game is generally well-liked by users.The tail of the histogram on the left indicates that a relatively small number of users gave the games a very low score.This suggests that some users found the game to be very disappointing.*
+**Histogram**
+*The user score histogram you shows that the game has a relatively normal distribution of user scores.The histogram also shows that the game has a relatively high average user score of around 7.5. This indicates that the game is generally well-liked by users.The tail of the histogram on the left indicates that a relatively small number of users gave the games a very low score.This suggests that some users found the game to be very disappointing.*
 
 
 ```{r}
@@ -136,7 +150,130 @@ ggplot(games, aes(y = User_Score)) +
 
 ```
 
+
+**BoxPlot**
+
 *The box plot for the distribution of user scores fr games. The box represents the middle 50% of the scores, with the median score marked by a line in the middle of the box.The median score is 7.5, which indicates that the game is generally well-liked by users.There are a few outliers in the data, which are marked as stars. These outliers represent users who gave the games very low score*
+
+
+```{r}
+qqnorm(games$User_Score,main="QQplot for UseScore")
+qqline(games$User_Score)
+```
+**QQ Plot:**
+*The Q-Q plot shows that the user score distribution is slightly aligned with the normal line.There are a few points in the Q-Q plot that deviate from the line. These deviations suggest that the user score distribution may not be perfectly normal*
+
+## Critic Score
+```{r}
+library(ggplot2)
+ggplot(games, aes(x =Critic_Score)) +
+  geom_histogram(binwidth = 6, fill = "blue", color = "red", alpha = 0.7) +
+  ggtitle("Critic Score Histogram") +
+  labs(x="Critic Score")+
+  theme_minimal()
+
+```
+
+**Critic Score:**
+*Critic score is a measure of how much critics like a video game. It is typically calculated by averaging critic ratings from various sources, such as review websites and magazines. Critic scores can range from 0 to 100, with a higher score indicating that the game is more popular and well-liked by critics.*
+
+
+*The critic score histogram shows that the game has a relatively normal distribution of critic scores but the graph has left skewed pattern.So we can infer that most critics have given the game a score of around 7 to 8*
+
+```{r}
+custom_colors <- c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728")
+
+# Create a custom star-shaped point
+star_point <- data.frame(x = 0, y = 0)
+
+# Create an attractive box plot with outliers as stars
+ggplot(games, aes(y =Critic_Score)) +
+  geom_boxplot(color = "blue", fill = "lightblue", alpha = 0.7) +
+  geom_point(data = star_point, aes(x = x, y = y), shape = 8, size = 2, color = custom_colors[2]) +
+  theme_minimal() +
+  scale_color_manual(values = custom_colors) +
+  labs(y = "Critic Scores") +
+  ggtitle("Box Plot of Critic Scores ")
+
+```
+
+**Boxplot:**
+
+*The box plot shows that the critic score distribution for all video games is relatively normal, with most scores falling between 60 and 90. The median score is around 75, which indicates that the majority of video games are generally well-liked by critics.There are a few outliers in the data, which are marked as stars. These outliers represent video games that received very low critic scores.Overall, the box plot suggests that most video games are generally well-liked by critics, but that there is some variation in how critics perceive different games.*
+
+```{r}
+qqnorm(games$Critic_Score,main="QQplot for CriticScore")
+qqline(games$Critic_Score)
+
+```
+**QQ-Plot:**
+*The Q-Q plot you provided shows that the critic score distribution is slightly well-aligned with the standard normal distribution.There are several points that deviate from the line significantly*
+
+## Sales
+
+```{r}
+library(ezids)
+games_3=games
+
+
+games_3=outlierKD2(games_3,Global_Sales,rm=TRUE)
+
+
+
+ggplot(data = games_3, mapping = aes(x = Global_Sales)) +
+  geom_histogram(fill = "skyblue", color = "black", bins = 15) +  
+  labs(
+    title = "Distribution of Global Sales",
+    x = "Global Sales",
+    y = "Frequency"
+  ) +
+  theme_minimal() +  
+  theme(plot.title = element_text(hjust = 0.5))  
+
+
+```
+
+**Histogram:**
+*The histogram of global sales in millions of shows a right-skewed distribution.This skewness is because  that the majority of video games sell less than 1 million copies.The histogram is skewed to the right, with a long tail extending to the right. This means that there are a few video games that sell extremely well, but most video games sell relatively poorly.*
+
+
+```{r}
+ggplot(data = games_3, mapping = aes(y = Global_Sales)) +
+  geom_boxplot(fill = "orange", color = "black") +  
+  labs(
+    title = "Boxplot of Global Sales",
+    y = "Global Sales"
+  ) +
+  theme_minimal() +  
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+
+```
+
+**Box-Plot:**
+*From the above boxplot we can infer that.The median global sales of video games is around 0.2 million copies.There are a few video games that sell extremely well, with sales figures in the tens of millions or even hundreds of millions of copies. These video games are outliers in the distribution and skew the mean upwards.*
+
+
+```{r}
+qqnorm(games_3$Global_Sales,main = "Global Sales")
+qqline(games_3$Global_Sales)
+
+```
+
+**QQ-Plot:**
+*The QQ plot further emphasizes the right-skewed nature of the global sales data, with the majority of games having low sales and a few outliers achieving exceptionally high sales figures.The points in the Q-Q plot are scattered around the line, and there are several points that deviate from the line significantly. This suggests that there is a lot of variation in the global sales distribution and that the distribution is not symmetrical.*
+
+## Categorical Variables
+
+
+```{r}
+ggplot(games)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release),main= "game releases over the years" )+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+
+*We are creating a bar plot to visualize the distribution of game releases over the years and counting how many games were released in each year*
+*The number of video game releases has steadily increased over the years, with a notable spike in 2008.The most popular years for video game releases are 2016, 2017, and 2018, each with over 10,000 releases.While there is a general trend of increasing video game releases, there are some years with dips in releases, such as 2013 and 2020.One possible explanation for the dip in releases in 2013 is the release of the PlayStation 4 and Xbox One consoles, which may have led to developers focusing on developing games for the new consoles.The dip in releases in 2020 is likely due to the COVID-19 pandemic, which disrupted game development and release schedules.*
+
 
 
 

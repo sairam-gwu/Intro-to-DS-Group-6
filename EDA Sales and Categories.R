@@ -78,10 +78,6 @@ qqline(games_3$Global_Sales)
 
 
 
-
-
-
-
 outlierKD2(games,Global_Sales,rm=FALSE,boxplt=TRUE,histogram = TRUE,qqplt=TRUE)
 
 
