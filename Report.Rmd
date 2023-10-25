@@ -118,16 +118,34 @@ qqline(games$User_Score)
 ```
 
 ```{r}
+library(ggplot2)
+ggplot(games, aes(x = games$Critic_Score)) +
+  geom_histogram(binwidth = 3, fill = "blue", color = "red", alpha = 0.7) +
+  ggtitle("Critic Score Histogram") +
+  labs(x="CriticScore")+
+  theme_minimal()
 
-ggplot(games,aes(y=Critic_Score))+geom_boxplot()
-ggplot(games,aes(x=Critic_Score))+geom_histogram(binwidth =5 ,fill='red',color='black')
-qqnorm(games$Critic_Score)
-qqline(games$Critic_Score)
+custom_colors <- c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728")
+
+# Create a custom star-shaped point
+star_point <- data.frame(x = 0, y = 0)
+
+# Create an attractive box plot with outliers as stars
+ggplot(games, aes(y = Critic_Score)) +
+  geom_boxplot(color = "blue", fill = "lightblue", alpha = 0.7) +
+  geom_point(data = star_point, aes(x = x, y = y), shape = 8, size = 2, color = custom_colors[2]) +
+  theme_minimal() +
+  scale_color_manual(values = custom_colors) +
+  labs(y = "Critic Score") +
+  ggtitle("Box Plot of Critic Scores ")
+
+qqnorm(games$User_Score,main="QQplot for CriticScore")
+qqline(games$User_Score)
 ```
 
+
+
 ```{r}
-
-
 
 ggplot(data = games_final, aes(x = reorder(Genre, -table(Genre)[Genre]), fill = Genre)) +
   geom_bar() +
@@ -169,3 +187,17 @@ ggplot(sales_by_year, aes(x = Year_of_Release, y = Global_Sales)) +
 
 ```
 
+#EDA of yea_wise_sale,genre,platform
+
+```{r}
+games_final%>%group_by(Platform)
+cnt<-games_final%>%group_by(Platform)%>%summarise(cnt=n())
+cnt<- cnt%>%arrange(desc(cnt))
+data <- cnt[order(cnt$cnt),]
+
+# Create a bar graph in ascending order
+ggplot(data, aes(x = reorder(Platform, -cnt), y = cnt,fill=Platform)) +
+  geom_bar(stat = "identity") +
+  labs(x="platform")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
