@@ -53,6 +53,7 @@ games %>% group_by(Platform) %>% summarise(
 ```
 
 ```{r} 
+library(dplyr)
 ggplot(games)+geom_bar(aes(x=Genre,fill=Genre))+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 games %>% count(Genre)
 
@@ -85,6 +86,7 @@ games %>% group_by(Year_of_Release) %>% summarise(
 
 
 ```{r}
+library(dplyr)
 games<-na.omit(games)
 unique(games$Rating)
 games$Rating <- ifelse(games$Rating== "", NA,games$Rating )
@@ -95,7 +97,7 @@ nrow(games)
 ```
 
 ```{r}
-
+library(dplyr)
 games%>%group_by(Platform)
 cnt<-games%>%group_by(Platform)%>%summarise(cnt=n())
 cnt<- cnt%>%arrange(desc(cnt))
@@ -114,7 +116,7 @@ ggplot(data, aes(x = reorder(Platform, cnt), y = cnt,fill=Platform)) +
 ```
 
 ```{r}
-games%>%group_by(Genre)
+games %>% group_by(Genre)
 cnt<-games%>%group_by(Genre)%>%summarise(cnt=n())
 cnt<- cnt%>%arrange(desc(cnt))
 cnt
