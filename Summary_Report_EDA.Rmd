@@ -44,54 +44,6 @@ nrow(games)
 sum(is.na(games$User_Score))
 sum(is.na(games$Critic_Score))
 ```
-```{r}
-library(ggplot2)
-library(dplyr)
-
-ggplot(games)+geom_bar(aes(x=Platform,fill=Platform))+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-games %>% count(Platform)
-
-games %>% group_by(Platform) %>% summarise( 
-  NA_COUNT = sum(is.na(Critic_Score)))
-games %>% group_by(Platform) %>% summarise( 
-  NA_COUNT = sum(is.na(Critic_Count)))
-games %>% group_by(Platform) %>% summarise( 
-  NA_COUNT = sum(is.na(User_Count)))
-games %>% group_by(Platform) %>% summarise( 
-  NA_COUNT = sum(is.na(User_Score)))
-```
-
-```{r} 
-ggplot(games)+geom_bar(aes(x=Genre,fill=Genre))+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-games %>% count(Genre)
-
-games %>% group_by(Genre) %>% summarise( 
-  Critic_score_Na_count = sum(is.na(Critic_Score)))
-games %>% group_by(Genre) %>% summarise( 
-  Critic_count_Na_count = sum(is.na(Critic_Count)))
-games %>% group_by(Genre) %>% summarise( 
-  user_count_Na_count = sum(is.na(User_Count)))
-games %>% group_by(Genre) %>% summarise( 
-  user_score_Na_count = sum(is.na(User_Score)))
-```
-
-```{r}
-ggplot(games)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release),main= "game releases over the years" )+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-games %>% count(Year_of_Release)
-
-games %>% group_by(Year_of_Release) %>% summarise( 
-  Na_count = sum(is.na(Critic_Score)))
-games %>% group_by(Year_of_Release) %>% summarise( 
-  Na_count = sum(is.na(Critic_Count)))
-games %>% group_by(Year_of_Release) %>% summarise( 
-  Na_count = sum(is.na(User_Count)))
-games %>% group_by(Year_of_Release) %>% summarise( 
-  Na_count = sum(is.na(User_Score)))
-```
-*We are creating a bar plot to visualize the distribution of game releases over the years and counting how many games were released in each year*
-*The number of video game releases has steadily increased over the years, with a notable spike in 2008.The most popular years for video game releases are 2016, 2017, and 2018, each with over 10,000 releases.While there is a general trend of increasing video game releases, there are some years with dips in releases, such as 2013 and 2020.One possible explanation for the dip in releases in 2013 is the release of the PlayStation 4 and Xbox One consoles, which may have led to developers focusing on developing games for the new consoles.The dip in releases in 2020 is likely due to the COVID-19 pandemic, which disrupted game development and release schedules.*
-
-
 
 ```{r}
 
@@ -160,6 +112,8 @@ ggplot(games, aes(y = User_Score)) +
 qqnorm(games$User_Score,main="QQplot for UseScore")
 qqline(games$User_Score)
 ```
+
+
 **QQ Plot:**
 *The Q-Q plot shows that the user score distribution is slightly aligned with the normal line.There are a few points in the Q-Q plot that deviate from the line. These deviations suggest that the user score distribution may not be perfectly normal*
 
@@ -206,6 +160,7 @@ qqnorm(games$Critic_Score,main="QQplot for CriticScore")
 qqline(games$Critic_Score)
 
 ```
+
 **QQ-Plot:**
 *The Q-Q plot you provided shows that the critic score distribution is slightly well-aligned with the standard normal distribution.There are several points that deviate from the line significantly*
 
@@ -267,7 +222,7 @@ qqline(games_3$Global_Sales)
 
 
 ```{r}
-ggplot(games)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release),main= "game releases over the years" )+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+ggplot(games)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release))+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))+labs(title="Distribution of game releases over the years")
 
 ```
 
@@ -277,10 +232,10 @@ ggplot(games)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release),main= "game r
 
 ```{r}
 
-ggplot(games)+geom_bar(aes(x=Genre,fill=Genre))+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+ggplot(games)+geom_bar(aes(x=Genre,fill=Genre))+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))+labs(title="Frequencey of games in each Genre")
 ```
 
-*The bar graph gives the number of video games in each genre.The bar graph you displays the distribution of video games across different genres. It indicates that the "Action" genre is the most prevalent, with a significantly higher number of games compared to other genres which is around 3000. Following "Action," the next most popular genres are "Adventure," "Sports," and "Role-Playing," each containing over 2000 games, signifying a substantial presence in the dataset. Conversely, the graph reveals that the "Strategy," "Simulation," and "Miscellaneous" genres are relatively less popular, with fewer than 1000 games in each category. This suggests that games falling under these genres are less common or less frequently released compared to the more dominant genres like "Action" and "Adventure."*
+*The bar graph gives the number of video games in each genre.The bar graph you displays the distribution of video games across different genres. It indicates that the "Action" genre is the most prevalent, with a significantly higher number of games compared to other genres which is around 3000. Following "Action," the next most popular genres are "Adventure," "Sports," and "Role-Playing," each containing over 2000 games, signifying a substantial presence in the dataset. Conversely, the graph reveals that the "Strategy," "Simulation," and "Miscellaneous" genres are relatively less popular, with fewer than 1000 games in each category. This suggests that games falling under these genres are less common or less freq uently released compared to the more dominant genres like "Action" and "Adventure."*
 
 
 ```{r}
@@ -303,11 +258,35 @@ ggplot(data, aes(x = reorder(Platform, cnt), y = cnt,fill=Platform)) +
 *The graph you provided shows the number of video games released by category. The x-axis of the graph shows the category of the game, and the y-axis shows the number of games released in that category.The graph shows that the most popular platform for video game releases is the PS2, with over 1000 games released for that platform.The next most popular platforms were the PS3 and Xbox 360 with over 700 games released for each of those platforms. The least popular platforms for video game releases were the Wii U and PlayStation Vita, with fewer than 300 games released for each of those platforms.*
 
 
+```{r}
 
-#Future Scope and References
 
-##Future Scope
+sales_by_year <- aggregate(Global_Sales ~ Year_of_Release, data = games_final, FUN = sum)
 
+# Create a bar plot
+ggplot(sales_by_year, aes(x = Year_of_Release, y = Global_Sales)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(
+    title = "Total Global Sales by Year of Release",
+    x = "Year of Release",
+    y = "Total Global Sales"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+```
+
+*The graph  shows the global sales of video games copies from year 1985 to 2016.The graph shows that global video game sales have increased steadily from 1994 to 2008.From 2008 to 2009 we can see that graph of sales decreased may be because of  Great Recession, which began in 2008 and caused consumers to cut back on spending on non-essential items such as video games.After 2010 we can see a slight increase of sales beacause the recession has ended. By 2011, the video game market was already quite saturated, with a large number of games available on a variety of platforms. This made it difficult for consumers to keep up with all of the latest releases, and led to some gamers becoming fatigued with the market and spending less money on video games overall.From 2011  Mobile gaming exploded in popularity during this time period, as smartphones and tablets became increasingly ubiquitous. Mobile games are typically much cheaper than traditional console or PC games, and they are also more convenient to play. This led to some gamers shifting their spending away from traditional video games and towards mobile games*
+
+
+# Future Scope and References
+
+## Future Scope
+```{r}
+
+```
 **Multivariate Analysis:**
 *Our next phase of research will involve a more detailed multivariate analysis. This will enable us to explore complex relationships between multiple variables, such as the impact of both the publisher and the platform on the global sales, impact on gloabal sales using UserScore and Critic Score. This will offer a deeper understanding of the factors impacting video game performance.*
 
@@ -317,7 +296,7 @@ ggplot(data, aes(x = reorder(Platform, cnt), y = cnt,fill=Platform)) +
 
 *Explore the impact of new technologies, such as virtual reality and augmented reality, on video game sales. This could involve analyzing sales data from games that use these technologies to see how they are performing compared to traditional video games.*
 
-##References
+## References
 
 -Chen, H., & Hu, Y. (2020). The impact of marketing campaigns on video game sales: A meta-analysis. Journal of Marketing, 84(4), 124-143. https://www.sciencedirect.com/science/article/pii/S0148296320304161
 
