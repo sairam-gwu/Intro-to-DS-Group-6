@@ -202,6 +202,7 @@ ggplot(data, aes(x = reorder(Platform, -cnt), y = cnt,fill=Platform)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
+
 ```{r}
 games_final%>%group_by(Genre)
 cnt<-games_final%>%group_by(Genre)%>%summarise(cnt=n())
@@ -215,4 +216,9 @@ ggplot(data, aes(x = reorder(Genre, -cnt), y = cnt,fill=Genre)) +
   geom_bar(stat = "identity") +
   labs(x='Genre') +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+ggplot(games_final)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release))+theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
