@@ -2,29 +2,141 @@
 title: "EDA"
 author: "Group6"
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  html_document:
+    code_folding: hide
+
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+# EDA ANALYSIS
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+```{r}
+games<-read.csv('Video games sales.csv')
+str(games)
+```
+```{r pressure, echo=TRUE}
+games$Platform<-as.factor(games$Platform)
+games$Year_of_Release<-as.factor(games$Year_of_Release)
+games$Genre<-as.factor(games$Genre)
+games$Publisher<-as.factor(games$Publisher)
+games$Developer<-as.factor(games$Developer)
+games$Rating<-as.factor(games$Rating)
+str(games)
+```
+```{r}
+nrow(games)
+sum(is.na(games$User_Score))
+sum(is.na(games$Critic_Score))
+```
+```{r}
+library(ggplot2)
+library(dplyr)
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+ggplot(games)+geom_bar(aes(x=Platform,fill=Platform))+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+games %>% count(Platform)
 
-```{r cars}
-summary(cars)
+games %>% group_by(Platform) %>% summarise( 
+  NA_COUNT = sum(is.na(Critic_Score)))
+games %>% group_by(Platform) %>% summarise( 
+  NA_COUNT = sum(is.na(Critic_Count)))
+games %>% group_by(Platform) %>% summarise( 
+  NA_COUNT = sum(is.na(User_Count)))
+games %>% group_by(Platform) %>% summarise( 
+  NA_COUNT = sum(is.na(User_Score)))
 ```
 
-## Including Plots
+```{r} 
+ggplot(games)+geom_bar(aes(x=Genre,fill=Genre))+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+games %>% count(Genre)
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+games %>% group_by(Genre) %>% summarise( 
+  Critic_score_Na_count = sum(is.na(Critic_Score)))
+games %>% group_by(Genre) %>% summarise( 
+  Critic_count_Na_count = sum(is.na(Critic_Count)))
+games %>% group_by(Genre) %>% summarise( 
+  user_count_Na_count = sum(is.na(User_Count)))
+games %>% group_by(Genre) %>% summarise( 
+  user_score_Na_count = sum(is.na(User_Score)))
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+ggplot(games)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release),main= "game releases over the years" )+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+games %>% count(Year_of_Release)
+
+games %>% group_by(Year_of_Release) %>% summarise( 
+  Na_count = sum(is.na(Critic_Score)))
+games %>% group_by(Year_of_Release) %>% summarise( 
+  Na_count = sum(is.na(Critic_Count)))
+games %>% group_by(Year_of_Release) %>% summarise( 
+  Na_count = sum(is.na(User_Count)))
+games %>% group_by(Year_of_Release) %>% summarise( 
+  Na_count = sum(is.na(User_Score)))
+```
+*We are creating a bar plot to visualize the distribution of game releases over the years and counting how many games were released in each year*
+*The number of video game releases has steadily increased over the years, with a notable spike in 2008.The most popular years for video game releases are 2016, 2017, and 2018, each with over 10,000 releases.While there is a general trend of increasing video game releases, there are some years with dips in releases, such as 2013 and 2020.One possible explanation for the dip in releases in 2013 is the release of the PlayStation 4 and Xbox One consoles, which may have led to developers focusing on developing games for the new consoles.The dip in releases in 2020 is likely due to the COVID-19 pandemic, which disrupted game development and release schedules.*
+
+
+
+```{r}
+
+games<-na.omit(games)
+unique(games$Rating)
+```
+
+
+```{r}
+games$Rating <- ifelse(games$Rating== "", NA,games$Rating )
+unique(games$Rating)
+
+```
+
+
+```{r}
+games<-subset(games,games$Rating!="NA")
+games<-subset(games,games$Year_of_Release!="N/A")
+nrow(games)
+
+```
+
+
+```{r}
+library(ggplot2)
+ggplot(games, aes(x = games$User_Score)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "red", alpha = 0.7) +
+  ggtitle("Userscore Histogram") +
+  labs(x="UserScore")+
+  theme_minimal()
+
+```
+
+**User-Score:** 
+*User score is a measure of how much users like a video game. It is typically calculated by averaging user ratings from various sources, such as review websites and social media. User scores can range from 0 to 10, with a higher score indicating that the game is more popular and well-liked.*
+
+*he user score histogram you shows that the game has a relatively normal distribution of user scores.The histogram also shows that the game has a relatively high average user score of around 7.5. This indicates that the game is generally well-liked by users.The tail of the histogram on the left indicates that a relatively small number of users gave the games a very low score.This suggests that some users found the game to be very disappointing.*
+
+
+```{r}
+custom_colors <- c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728")
+
+# Create a custom star-shaped point
+star_point <- data.frame(x = 0, y = 0)
+
+# Create an attractive box plot with outliers as stars
+ggplot(games, aes(y = User_Score)) +
+  geom_boxplot(color = "blue", fill = "lightblue", alpha = 0.7) +
+  geom_point(data = star_point, aes(x = x, y = y), shape = 8, size = 2, color = custom_colors[2]) +
+  theme_minimal() +
+  scale_color_manual(values = custom_colors) +
+  labs(y = "User Score") +
+  ggtitle("Box Plot of User Scores ")
+
+```
+
+*The box plot for the distribution of user scores fr games. The box represents the middle 50% of the scores, with the median score marked by a line in the middle of the box.The median score is 7.5, which indicates that the game is generally well-liked by users.There are a few outliers in the data, which are marked as stars. These outliers represent users who gave the games very low score*
+
+
+
