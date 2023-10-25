@@ -82,13 +82,100 @@ After the completion of EDA, we wish to find answers to the following research q
 
 ```{r}
 games<-read.csv('Video games sales.csv')
+
+
+```
+
+# 2. Data Preprocessing
+
+## 2.1 Structure of the dataset
+
+The dataset that we have used contains information on the following attributes:
+
+* Name
+* Platform
+* Year_of_Release
+* Genre
+* Publisher
+* NA_Sales
+* EU_Sales
+* JP_Sales
+* Other_Sales
+* Global_Sales
+* Critic_score (an aggregate score by Metacritic staff)
+* Critic_count (the number of critics used for the Critic_score)
+* User_score (score by Metacritic's subscribers)
+* User_count (the number of users who provided the user_score)
+* Developer (the party responsible for creating the game)
+* Rating (ESRB ratings)
+
+
+## 2.2 Data Cleaning
+
+### Missing Observations
+
+Despite the extensive number of variables present and the amount of rows in our dataset, there were a few limitations which required data cleaning :
+
+* The dataset was aquired using web-scraping, leading to a few errors and ommisions in the data, these needed to be removed
+* Some platforms had limited coverage on metacritic, leading to missing values in their user scores, critic scores or their sales
+
+Before deciding on whether to remove the missing observations, we wanted to analyze their occurence based on the platform type
+
+```{r}
+
+
+plat_na= games %>%
+  group_by(Platform) %>%
+  summarize(NAs_in_User_Score = sum(is.na(User_Score)))
+
+
+result <- games %>%
+  group_by(Platform) %>%
+  summarise(
+    NA_Count = sum(is.na(User_Score)),
+    Total_Count = n(),
+    NA_Rate = NA_Count / Total_Count
+  )
+
+
+result$Platform <- reorder(result$Platform, -result$NA_Rate) 
+
+ggplot(result, aes(x = Platform, y = NA_Rate)) +
+  geom_bar(stat = "identity", fill = "#A5D8DD") +
+  labs(title = "NA Rate by Platform", x = "Platform", y = "NA Rate") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+```
+As we can see there is a clear capture issue for certain platforms, while other more poplar platforms like PC and Xbox 360 have an NA Rate of less than 25%.
+
+Hence, replacing the missing observations with an average value for the scores or sales would not make sense as it would distort the underlying platform specific behavior. Therefore, we decided to drop these observations
+
+
+```{r}
 games<-na.omit(games)
 games$Rating <- ifelse(games$Rating== "", NA,games$Rating )
 games<-subset(games,games$Rating!="NA")
 games<-subset(games,games$Year_of_Release!="N/A")
-
 ```
 
+
+### Outlier Handling
+
+We identified outliers in the Global Sales data with significantly higher sales figures compared to most of the dataset.
+As our analysis focused on comparing the means of different groups, the presence of these outliers could affect our results
+```{r}
+
+
+
+outlierKD2(games,Global_Sales,rm=FALSE,hist=TRUE,boxplt=TRUE,qqplt=TRUE)
+```
+
+As shown, the data with the inclusion the outliers, exhibits a substantial right-skew in both the histogram and boxplot, potentially affecting the validity of our statistical analyses.
+By removing these outliers, the data became more normally distributed; although some right-skewness remains due to the inherent concentration of sales values near low values.
 
 # 4. Research Questions
 
