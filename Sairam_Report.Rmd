@@ -1,24 +1,23 @@
 ---
 title: "Video Game Sales and Performance Analysis"
-#author: "Sairam Venkatachalam"
+author: "Sairam Venkatachalam"
 date: "`r Sys.Date()`"
 output:
   html_document:
+    highlight: monochrome
+    
     code_folding: hide
     number_sections: false
     toc: yes
     toc_depth: 3
     toc_float: yes
     theme: lumen
-    css: |
-      body {
-        background-color: #0074e4; /* Blue background */
-        color: #ffffff; /* White text */
-      }
-  pdf_document:
-    toc: yes
-    toc_depth: '3'
 ---
+
+<style>
+    body { background-color: White; }
+    pre, pre:not([class]) { background-color: white; }
+</style>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -242,6 +241,263 @@ ggplot(games_final, aes(x = ifelse(grepl("Nintendo", games_final$Developer), "Ni
 The scatter plots also clearly illustrate this difference. Nintendo benifits from producing a much lower number of badly rated games, and they maintain consistency. Perhaps, this is the main reason they have maintained their brand image over the years as an elite game developer
 
 
+## Research Question 3 : 
+
+**What is the Trend in global sales by year? How does this trend correlate to the usage of difference platforms?**
+
+
+```{r}
+
+#-----------------------------------------------------------------------------------------------------------------
+# Smart Question 3 - Trend of Global sales by year of release
+
+sales_by_year <- aggregate(Global_Sales ~ Year_of_Release, data = games_final, FUN = mean)
+
+# Create a bar plot
+ggplot(sales_by_year, aes(x = Year_of_Release, y = Global_Sales)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(
+    title = "Average Global Sales by Year of Release",
+    x = "Year of Release",
+    y = "Average Global Sales"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
 
+sales_by_year <- aggregate(Global_Sales ~ Year_of_Release, data = games_final, FUN = sum)
+
+# Create a bar plot
+ggplot(sales_by_year, aes(x = Year_of_Release, y = Global_Sales)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(
+    title = "Total Global Sales by Year of Release",
+    x = "Year of Release",
+    y = "Total Global Sales"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+# 
+
+* In the late 1990s and early 2000s, the video game industry witnessed an extraordinary surge in total global sales. This era marked a remarkable upswing in the popularity and sales of video games, redefining the entertainment landscape.
+
+* Amidst this booming phase, PlayStation emerged as the predominant platform, playing a pivotal role in the industry's remarkable success. The introduction of the PlayStation 2 (PS2) made a substantial impact on the gaming market, solidifying Sony's position as a key player.
+
+* However, post-2008, the industry experienced a gradual decline in global sales. This decline can be attributed, in part, to the global economic recession, which had ripple effects across various sectors. Furthermore, a noticeable shift in consumer preferences toward mobile gaming contributed to the evolving landscape of the industry. These changes prompted both players and industry leaders to adapt and innovate in response to emerging trends.
+
+
+
+```{r}
+max_platform <- games_final %>%
+  group_by(Year_of_Release, Platform) %>%
+  summarise(Total_Sales = sum(Global_Sales)) %>%
+  top_n(1, Total_Sales)
+
+
+ggplot(data = max_platform, aes(x = Year_of_Release, y = Total_Sales, fill = Platform)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Total Global Sales by Year for the best performing platform",
+    x = "Year of Release",
+    y = "Total Global Sales"
+  )+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+* As the graph above shows, there is a clear trend in platform usage between different eras. The 90's saw mainstream usage of PS and PC.
+
+* The 00's was the era of PS2. Most developers are publishers targeted the PS2 console for the release of their games due to its high popularity and affordable price among users 
+
+* The release of the Wii created shockwaves in the market, with Wii sports being the game with the highest copies sold in history!
+
+* Following the short dominance of Wii, The playstation made a comeback with PS3 which once again dominated for half a decade
+
+
+## Research Question 4 : 
+
+**Is there a statistically significant difference in mean sales for games with a rating of 7.5 or higher compared to those with a rating below 7.5? Can we determine a critical score that leads to higher sales?**
+
+The primary goal of this research question is to assess the disparity in global sales between video games with a rating of 7.5 or higher and those with lower ratings.
+
+Subsequently, We aim to determine a critical rating threshold at which the most substantial sales difference becomes evident.
+
+The Hyoptheses are defined as follows :
+
+* Null Hypothesis : There is no difference between the mean sales of both groups
+* Altername Hypothesis : There is a non-zero difference between the mean sales of both groups
+
+### Threshold score of 7.5
+
+```{r}
+
+
+
+#-----------------------------------------------------------------------------------------------------------------
+# SMART Q - Threshold Rating
+
+
+rating_above <- subset(games_final, games_final$User_Score >= 7.5)
+rating_below <- subset(games_final, games_final$User_Score < 7.5)
+
+# Calculate the sample means
+mean_sales_above <- mean(rating_above$Global_Sales)
+mean_sales_below <- mean(rating_below$Global_Sales)
+
+# Calculate the difference in means
+diff_means <- mean_sales_above - mean_sales_below
+
+# Perform a t-test for the two groups with unequal variances
+t_test_result <- t.test(rating_above$Global_Sales, rating_below$Global_Sales, var.equal = FALSE)
+
+cat("Mean difference is:", diff_means, "\n")
+cat("P-Value for the T-Test:", t_test_result$p.value, "\n")
+
+
+ggplot(games_final, aes(x = User_Score, y = Global_Sales, color = User_Score >= 7.5)) +
+  geom_point() +
+  scale_color_manual(values = c("red", "green"), 
+                     breaks = c(FALSE, TRUE), 
+                     labels = c("< 7.5", ">= 7.5")) +
+  labs(x = "User Score", y = "Global Sales (Millions)", title = "User Score vs. Global Sales") +
+  guides(color = guide_legend(title = "User Score")) +
+  theme_minimal()
+
+
+
+
+```
+
+As shown, the p value associated with the 2 sample t-test is low enough for us to reject the Null hypothesis
+
+The difference in mean sales at the 7.5 rating threshold is 0.09 Million which is quite small. As the scatter plot illustrates, there is a lot of spread for games rated 7.5 or more, indicating a more multivariate complex relationship for the global sales.
+
+
+
+### Iterating to find the critical score
+
+```{r}
+#-----------------------------------------------------------------------------------------------------------------
+
+#Iterating to find threshold
+
+thresholds <- numeric()
+diff_means_values <- numeric()
+p_values <- numeric()
+
+best_rating_threshold <- NA
+best_diff_means <- -Inf
+best_p_value <- 1  # Initialize with a value above 0.05
+
+
+for (rating_threshold in seq(4.0, 8.5, by = 0.1)) {
+  # Subset data for games with user scores above and below the threshold
+  rating_above <- subset(games_final, games_final$User_Score >= rating_threshold)
+  rating_below <- subset(games_final, games_final$User_Score < rating_threshold)
+  
+  # Calculate the sample means
+  mean_sales_above <- mean(rating_above$Global_Sales)
+  mean_sales_below <- mean(rating_below$Global_Sales)
+  
+  # Calculate the difference in means
+  diff_means <- mean_sales_above - mean_sales_below
+  
+  # Perform a t-test for the two groups with unequal variances
+  t_test_result <- t.test(rating_above$Global_Sales, rating_below$Global_Sales, var.equal = FALSE)
+  
+  # Store the results in vectors
+  thresholds <- c(thresholds, rating_threshold)
+  diff_means_values <- c(diff_means_values, diff_means)
+  p_values <- c(p_values, t_test_result$p.value)
+  
+  # Check if the result is better than the current best result
+  if (diff_means > best_diff_means && t_test_result$p.value < 0.05) {
+    best_diff_means <- diff_means
+    best_p_value <- t_test_result$p.value
+    best_rating_threshold <- rating_threshold
+  }
+}
+
+# Print the best result
+cat("Best rating split with the highest mean difference and p-value below 0.05 is:", best_rating_threshold, "\n")
+cat("Mean Difference in Sales:", best_diff_means, "\n")
+cat("P-Value for the T-Test:", best_p_value, "\n")
+
+```
+
+As shown, the user score of 4.1 produces the highest difference in mean global sales between both groups at 0.17 Million copies. The p value associated with the test is enough to reject the Null Hypothesis.
+
+We can see a steady decline in the mean differences as the user score increases while always remaining positive. This indicates that the 2 variables are weakly correlated. When calculating the Pearson correlation coefficient, we get a 
+value of 0.145
+
+```{r}
+#-- Visually showing the result
+plot(
+  thresholds, 
+  diff_means_values, 
+  type = "l", 
+  col = "blue", 
+  xlab = "Rating Threshold", 
+  ylab = "Mean Difference in Sales",
+  main = "Threshold vs. Mean Difference in Sales",
+  xlim = c(3.8, 8),
+  ylim = c(max(diff_means_values) * 0.5, max(diff_means_values) * 1.1)
+)
+
+# Label points with maximum mean difference
+max_diff_idx <- which.max(diff_means_values)
+text(
+  thresholds[max_diff_idx], 
+  diff_means_values[max_diff_idx], 
+  labels = paste("Threshold:", thresholds[max_diff_idx], "\n Difference:", round(diff_means_values[max_diff_idx], 2)),
+  pos = 3,
+  col = "blue"
+)
+
+
+
+
+
+
+
+# Create a new plot for p-value vs. rating
+par(mar = c(5, 5, 4, 5))  # Adjust margin for labels
+plot(
+  thresholds, 
+  -log10(p_values), 
+  type = "l", 
+  col = "red", 
+  xlab = "Rating Threshold", 
+  ylab = "-log10(P-Value)",
+  main = "User Rating vs. P-Value",
+  xlim = c(4, 8),
+  ylim = c(0, max(-log10(p_values)) + 2)
+)
+
+```
+
+The p values are of the order of magnitude of -10 or lower indicating that the results are statistically significant across the board
+
+```{r}
+ggplot(games_final, aes(x = User_Score, y = Global_Sales, color = User_Score >= 4.1)) +
+  geom_point() +
+  scale_color_manual(values = c("red", "green"), 
+                     breaks = c(FALSE, TRUE), 
+                     labels = c("< 4.1", ">= 4.1")) +
+  labs(x = "User Score", y = "Global Sales (Millions)", title = "User Score vs. Global Sales") +
+  guides(color = guide_legend(title = "User Score")) +
+  theme_minimal()
+
+
+```
+
+Once again, the scatter chart illustrates the complex relationship between user score and global sales. For lower values of user score such as 4.1, we can see clear trends and a positive correlation. However, this behavior becomes diluted for higher user scores
+
+### Bonferroni Correction
+
+The Bonferroni test is a multiple-comparison correction used when several dependent or independent statistical tests are being performed simultaneously. The reason is that while a given alpha value may be appropriate for each individual comparison, it is not appropriate for the set of all comparisons. We must check if the p value is less than alpha (0.05) divided by the number of tests performed.
+
+In the case of our tests, we are testing multiple user scores to determine whether the differences in the mean sales between the groups is statistically significant. However, given our p values are of the order -10 and lower, adjusting alpha with the Bonferroni correction would still yield very statistically significant results
