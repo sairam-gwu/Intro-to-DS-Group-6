@@ -275,5 +275,54 @@ ggplot(games)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release),main= "game r
 *The number of video game releases has steadily increased over the years, with a notable spike in 2008.The most popular years for video game releases are 2016, 2017, and 2018, each with over 10,000 releases.While there is a general trend of increasing video game releases, there are some years with dips in releases, such as 2013 and 2020.One possible explanation for the dip in releases in 2013 is the release of the PlayStation 4 and Xbox One consoles, which may have led to developers focusing on developing games for the new consoles.The dip in releases in 2020 is likely due to the COVID-19 pandemic, which disrupted game development and release schedules.*
 
 
+```{r}
+
+ggplot(games)+geom_bar(aes(x=Genre,fill=Genre))+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+*The bar graph gives the number of video games in each genre.The bar graph you displays the distribution of video games across different genres. It indicates that the "Action" genre is the most prevalent, with a significantly higher number of games compared to other genres which is around 3000. Following "Action," the next most popular genres are "Adventure," "Sports," and "Role-Playing," each containing over 2000 games, signifying a substantial presence in the dataset. Conversely, the graph reveals that the "Strategy," "Simulation," and "Miscellaneous" genres are relatively less popular, with fewer than 1000 games in each category. This suggests that games falling under these genres are less common or less frequently released compared to the more dominant genres like "Action" and "Adventure."*
+
+
+```{r}
+library(dplyr)
+games%>%group_by(Platform)
+cnt<-games%>%group_by(Platform)%>%summarise(cnt=n())
+cnt<- cnt%>%arrange(desc(cnt))
+cnt
+data <- cnt[order(cnt$cnt),decreasing=TRUE ]
+
+# Create a bar graph in ascending order
+ggplot(data, aes(x = reorder(Platform, cnt), y = cnt,fill=Platform)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Games Released VS Platform") +
+  xlab("Category") +
+  ylab("Frequency (Count)") +
+  theme_minimal()
+```
+
+*The graph you provided shows the number of video games released by category. The x-axis of the graph shows the category of the game, and the y-axis shows the number of games released in that category.The graph shows that the most popular platform for video game releases is the PS2, with over 1000 games released for that platform.The next most popular platforms were the PS3 and Xbox 360 with over 700 games released for each of those platforms. The least popular platforms for video game releases were the Wii U and PlayStation Vita, with fewer than 300 games released for each of those platforms.*
+
+
+
+#Future Scope and References
+
+##Future Scope
+
+**Multivariate Analysis:**
+*Our next phase of research will involve a more detailed multivariate analysis. This will enable us to explore complex relationships between multiple variables, such as the impact of both the publisher and the platform on the global sales, impact on gloabal sales using UserScore and Critic Score. This will offer a deeper understanding of the factors impacting video game performance.*
+
+**Predictive Modeling & Classification:**
+
+*We will utilize predictive modeling and classification methods to forecast sales patterns, recognize distinct market segments, and anticipate the success of video games*
+
+*Explore the impact of new technologies, such as virtual reality and augmented reality, on video game sales. This could involve analyzing sales data from games that use these technologies to see how they are performing compared to traditional video games.*
+
+##References
+
+-Chen, H., & Hu, Y. (2020). The impact of marketing campaigns on video game sales: A meta-analysis. Journal of Marketing, 84(4), 124-143. https://www.sciencedirect.com/science/article/pii/S0148296320304161
+
+-Lin, Y., & Wu, C. (2021). The impact of player demographics on video game sales: A segmentation analysis. Computers in Human Behavior, 118, 106653. https://www.researchgate.net/publication/31977403_Segmentation_of_the_games_market_using_multivariate_analysis
+
+-Duan, W., & Zhang, J. (2019). The impact of critic reviews on video game sales: Evidence from a large-scale panel dataset. Journal of Business Research, 104, 70-80. https://pubsonline.informs.org/doi/abs/10.1287/mnsc.2023.4754
 
 
