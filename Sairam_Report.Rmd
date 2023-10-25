@@ -105,6 +105,12 @@ games_final<-na.omit(games_final)
 
 **What proportion of all 'Shooter' Games have a User Score of >=8.0**
 
+The idea of this research question was to get a sense of the proportion or percentage of games in the genre of 'Shooter' which had a high user rating which we defined at 8.0 or more. This was done in the following steps:
+
+* First, we calculate the point estimate for the proportion from our sample
+* Second, we calculate the standard error for out sample distribution. We use the t distribution as we don't know the standard deviation of the overall population
+* Third, we calculate the critical t score that captures the 95% confidence interval for the proportion
+* Finally, we calculate the upper and lower bounds using the point estimate and standard errors
 
 ```{r}
 #----------------------------------------------------------------------------------------------------------------
@@ -155,12 +161,22 @@ ggplot(plot_data, aes(x = x, y = y)) +
 
 ```
 
+As shown, the sample proportion is around ```r sample_proportion``` which implies that 31.6% of 'Shooter' games in our dataset had a user rating of >=8.0
+
+The confidence The 95% confidence interval for this proportion falls between 0.283 to 0.350 . This indicates that the true proportion of highly-rated shooter games likely lies within this range
+
+Interestingly, the proportion of of non-shooter games is around 0.337 which is higher than shooter games.
 
 ## Research Question 2 : 
 
 **What are the average user scores for games developed by Nintendo, and how do they compare to other companies? Are these differences statistically significant?**
 
+The objective of this research question was to look at games developed by the developer giant Nintendo, to determine is they did better on average compares to non-nintendo games, specifically in terms of their user scores and critic scores.
 
+We define the Hypotheses as follows:
+
+* Null Hypothesis : There is no difference between the mean scores of games developed by Nintendo and others
+* Alternate Hypothesis : There is a non-zero difference between the mean scores of games developed by Nintendo and others
 
 ```{r}
 #------------------------------------------------------------------------------------------------------------------
@@ -182,6 +198,13 @@ t_test_nintendo
 t_test_nintendo <- t.test(dev_nintendo$Critic_Score,dev_others$Critic_Score,var.equal = FALSE,conf.level=0.99) 
 
 t_test_nintendo
+
+
+```
+
+The results of our 2 sample t-tests give us enough to reject the null hypothesis in both cases. Nintendo performs much better compared to other developers, having on average a user score of **7.94** compared to **7.13** and critic score of **77.16** compared to **68.95**
+
+```{r}
 
 #--- Visually showing results
 
@@ -214,9 +237,9 @@ ggplot(games_final, aes(x = ifelse(grepl("Nintendo", games_final$Developer), "Ni
   theme(legend.position = "top")
 #----
 
-
-
 ```
+
+The scatter plots also clearly illustrate this difference. Nintendo benifits from producing a much lower number of badly rated games, and they maintain consistency. Perhaps, this is the main reason they have maintained their brand image over the years as an elite game developer
 
 
 
