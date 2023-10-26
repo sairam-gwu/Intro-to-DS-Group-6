@@ -29,60 +29,8 @@ games$Developer<-as.factor(games$Developer)
 games$Rating<-as.factor(games$Rating)
 str(games)
 ```
-```{r}
-nrow(games)
-sum(is.na(games$User_Score))
-sum(is.na(games$Critic_Score))
-```
-
-```{r}
-library(ggplot2)
-library(dplyr)
-
-ggplot(games)+geom_bar(aes(x=Platform,fill=Platform))+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-games %>% count(Platform)
-
-games %>% group_by(Platform) %>% summarise( 
-  NA_COUNT = sum(is.na(Critic_Score)))
-games %>% group_by(Platform) %>% summarise( 
-  NA_COUNT = sum(is.na(Critic_Count)))
-games %>% group_by(Platform) %>% summarise( 
-  NA_COUNT = sum(is.na(User_Count)))
-games %>% group_by(Platform) %>% summarise( 
-  NA_COUNT = sum(is.na(User_Score)))
-```
-
-```{r} 
-library(dplyr)
-ggplot(games)+geom_bar(aes(x=Genre,fill=Genre))+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-games %>% count(Genre)
-
-games %>% group_by(Genre) %>% summarise( 
-  Critic_score_Na_count = sum(is.na(Critic_Score)))
-games %>% group_by(Genre) %>% summarise( 
-  Critic_count_Na_count = sum(is.na(Critic_Count)))
-games %>% group_by(Genre) %>% summarise( 
-  user_count_Na_count = sum(is.na(User_Count)))
-games %>% group_by(Genre) %>% summarise( 
-  user_score_Na_count = sum(is.na(User_Score)))
-```
 
 
-
-
-```{r}
-ggplot(games)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release))+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-games %>% count(Year_of_Release)
-
-games %>% group_by(Year_of_Release) %>% summarise( 
-  Na_count = sum(is.na(Critic_Score)))
-games %>% group_by(Year_of_Release) %>% summarise( 
-  Na_count = sum(is.na(Critic_Count)))
-games %>% group_by(Year_of_Release) %>% summarise( 
-  Na_count = sum(is.na(User_Count)))
-games %>% group_by(Year_of_Release) %>% summarise( 
-  Na_count = sum(is.na(User_Score)))
-```
 
 
 ```{r}
@@ -93,8 +41,10 @@ games$Rating <- ifelse(games$Rating== "", NA,games$Rating )
 unique(games$Rating)
 games<-subset(games,games$Rating!="NA")
 games<-subset(games,games$Year_of_Release!="N/A")
-nrow(games)
 ```
+
+
+
 
 ```{r}
 library(dplyr)
@@ -105,7 +55,7 @@ cnt
 data <- cnt[order(cnt$cnt),decreasing=TRUE ]
 
 # Create a bar graph in ascending order
-ggplot(data, aes(x = reorder(Platform, cnt), y = cnt,fill=Platform)) +
+ggplot(data, aes(x = reorder(Platform, -cnt), y = cnt,fill=Platform)) +
   geom_bar(stat = "identity") +
   labs(title = "Bar Graph Sorted in Ascending Order") +
   xlab("Category") +
@@ -123,7 +73,7 @@ cnt
 data <- cnt[order(cnt$cnt),decreasing=TRUE ]
 
 # Create a bar graph in ascending order
-ggplot(data, aes(x = reorder(Genre, cnt), y = cnt,fill=Genre)) +
+ggplot(data, aes(x = reorder(Genre, -cnt), y = cnt,fill=Genre)) +
   geom_bar(stat = "identity") +
   labs(title = "Bar Graph Sorted in Ascending Order") +
   xlab("Category") +
@@ -132,19 +82,7 @@ ggplot(data, aes(x = reorder(Genre, cnt), y = cnt,fill=Genre)) +
 ```
 
 ```{r}
-games%>%group_by(Year_of_Release)
-cnt<-games%>%group_by(Year_of_Release)%>%summarise(cnt=n())
-cnt<- cnt%>%arrange(desc(cnt))
-cnt
-data <- cnt[order(cnt$cnt),increasing=TRUE ]
-
-# Create a bar graph in ascending order
-ggplot(data, aes(x = reorder(Year_of_Release, cnt), y = cnt,fill=Year_of_Release)) +
-  geom_bar(stat = "identity") +
-  labs(title = "Bar Graph Sorted in Ascending Order") +
-  xlab("Category") +
-  ylab("Frequency (Count)") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ggplot(games_final)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release))+theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 ```{r}
 ga<-games%>%group_by(Year_of_Release)%>%summarise(Global_Sales=mean(Global_Sales))
@@ -161,7 +99,7 @@ ggplot(data, aes(x = reorder(Year_of_Release, Global_Sales), y = Global_Sales,fi
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-```
+
 
 ```{r}
 ggplot(data = games) +
@@ -220,33 +158,28 @@ nrow(new_games$Critic_Score==0)
 ```
 
 
-```{r}
-ggplot(new_games)+geom_col(aes(x=Genre,y=NA_Sales,fill=Genre))
-
-ggplot(new_games)+geom_col(aes(x=Genre,y=EU_Sales,fill=Genre))
-
-ggplot(new_games)+geom_col(aes(x=Genre,y=Global_Sales,fill=Genre))
-```
-
-
 
 ```{r}
-ggplot(new_games)+geom_line(aes(x=Genre,y=NA_Sales,color=Genre))
-
-ggplot(new_games)+geom_line(aes(x=Genre,y=EU_Sales,color=Genre))
-```
-
-
-```{r}
-ggplot(new_games)+geom_col(aes(x=Year_of_Release,y=Global_Sales,fill=Year_of_Release))
-
-ggplot(new_games)+geom_col(aes(x=Year_of_Release,y=EU_Sales,fill=Year_of_Release))
-```
-
-```{r}
-my_plot <-ggplot(new_games)+geom_col(aes(x=Year_of_Release,y=Global_Sales,fill=Year_of_Release))
-
+cnt<-new_games%>%group_by(Genre)%>%summarise(Total_Sales = sum(NA_Sales))
+cnt<- cnt%>%arrange(desc(Total_Sales))
+data <- cnt[order(cnt$Total_Sales),]
+data
+# Create a bar graph in ascending order
+ggplot(data, aes(x = reorder(Genre, -Total_Sales), y = Total_Sales,fill=Genre)) +
+  geom_bar(stat = "identity") +
+  labs(x="platform")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 
 ```{r}
+cnt<-new_games%>%group_by(Genre)%>%summarise(Total_Sales = sum(EU_Sales))
+cnt<- cnt%>%arrange(desc(Total_Sales))
+data <- cnt[order(cnt$Total_Sales),]
+data
+# Create a bar graph in ascending order
+ggplot(data, aes(x = reorder(Genre, -Total_Sales), y = Total_Sales,fill=Genre)) +
+  geom_bar(stat = "identity") +
+  labs(x="platform")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
