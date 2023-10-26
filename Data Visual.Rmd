@@ -183,3 +183,16 @@ ggplot(data, aes(x = reorder(Genre, -Total_Sales), y = Total_Sales,fill=Genre)) 
   labs(x="platform")+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
+
+```{r}
+
+cnt<-new_games%>%group_by(Genre)%>%summarise(Total_Sales = sum(JP_Sales))
+cnt<- cnt%>%arrange(desc(Total_Sales))
+data <- cnt[order(cnt$Total_Sales),]
+data
+# Create a bar graph in ascending order
+ggplot(data, aes(x = reorder(Genre, -Total_Sales), y = Total_Sales,fill=Genre)) +
+  geom_bar(stat = "identity") +
+  labs(x="platform")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
