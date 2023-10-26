@@ -38,7 +38,7 @@ The video game industry is a multi-billion dollar industry that is still expandi
 
 ## Objective
 
-This research project's goal is to analyze video game sales and performance data that was taken from Metacritic using exploratory data analysis (EDA) and hypothesis testing in order to: Identify patterns and trends in video game sales and performance. Test hypotheses about the relationships between various variables, including release date, publisher, genre, metacritic scores, and platform. We also hope to learn about the elements that affect the success of video games and the video game business. 
+This research project's goal is to analyze video game sales and performance data that was taken from Metacritic using exploratory data analysis (EDA) and hypothesis testing in order to identify patterns and trends in video game sales and performance. We aim to test hypotheses about the relationships between various variables, including release date, publisher, genre, metacritic scores, and platform. We also hope to learn about the elements that affect the success of video games and the video game business. 
 
 ## Data Source
 
@@ -84,7 +84,7 @@ Despite the extensive number of variables present and the amount of rows in our 
 * The dataset was aquired using web-scraping, leading to a few errors and ommisions in the data, these needed to be removed
 * Some platforms had limited coverage on metacritic, leading to missing values in their user scores, critic scores or their sales
 * Only 6826 out of 16719 observations were complete with all variables. This means that a significant portion of the data is missing information 
-* The games in the dataset can only be found on Metacritic. Thus, not all of the video games that have ever been released are included in the dataset. 
+* The games in the dataset are only those that can be found on Metacritic. Thus, not all of the video games that have ever been released are included in the dataset. 
 * Not all of the variables that affect sales are covered by the dataset. Information on variables like marketing expenditure, critical acclaim, and player involvement is absent from the dataset.
 
 ## Libraries Used
@@ -92,6 +92,10 @@ Despite the extensive number of variables present and the amount of rows in our 
 **ggplot2:** A creative canvas where data transforms into captivating visual narratives. This library enables the artful crafting of plots, ensuring that data stories are not just seen but felt. 
 
 **dplyr:** The meticulous editor, refining dataset’s with surgical precision. It’s the toolkit for data shaping, sorting, and summarizing, ensuring that the narrative emerges with clarity and insight. 
+
+**ezids:** This library was primarily used to identify and remove outliers in the dataset
+
+
 
 ## Research Questions: 
 
@@ -208,7 +212,7 @@ ggplot(games, aes(x = games$User_Score)) +
 
 ```
 
-The user score histogram you shows that the game has a relatively normal distribution of user scores.The histogram also shows that the game has a relatively high average user score of around 7.5. This indicates that the game is generally well-liked by users.The tail of the histogram on the left indicates that a relatively small number of users gave the games a very low score.This suggests that some users found the game to be very disappointing.
+The user score histogram above shows that the game has a relatively normal distribution of user scores.The histogram also shows that the game has a relatively high average user score of around 7.5. This indicates that the game is generally well-liked by users.The tail of the histogram on the left indicates that a relatively small number of users gave the games a very low score.This suggests that some users found some games to be very disappointing.
 
 
 ```{r}
@@ -229,7 +233,7 @@ ggplot(games, aes(y = User_Score)) +
 ```
 
 
-The box plot for the distribution of user scores fr games. The box represents the middle 50% of the scores, with the median score marked by a line in the middle of the box.The median score is 7.5, which indicates that the game is generally well-liked by users.There are a few outliers in the data, which are marked as stars. These outliers represent users who gave the games very low score
+The box plot for the distribution of user scores for games. The box represents the middle 50% of the scores, with the median score marked by a line in the middle of the box.The median score is 7.5, which indicates that the game is generally well-liked by users.There are a few outliers in the data, which are marked as stars. These outliers represent users who gave the games very low score
 
 
 ```{r}
@@ -282,7 +286,7 @@ qqline(games$Critic_Score)
 
 ```
 
-The Q-Q plot you provided shows that the critic score distribution is slightly well-aligned with the standard normal distribution.There are several points that deviate from the line significantly
+The Q-Q plot shows that the critic score distribution is well-aligned with the standard normal distribution.There are a few points that deviate from the line suggesting that it is not perfectly normal
 
 ### Sales
 
@@ -303,7 +307,7 @@ ggplot(data = games_final, mapping = aes(x = Global_Sales)) +
 
 ```
 
-The histogram of global sales in millions of shows a right-skewed distribution.This skewness is because  that the majority of video games sell less than 0.3 million copies.The histogram is skewed to the right, with a long tail extending to the right. This means that there are a few video games that sell extremely well, but most video games sell relatively poorly.
+The histogram of global sales in millions of copies shows a right-skewed distribution.This skewness is because  that the majority of video games sell less than 0.3 million copies.The histogram is skewed to the right, with a long tail extending to the right. This means that there are a few video games that sell extremely well, but most video games sell relatively poorly.
 
 
 ```{r warning=FALSE}
@@ -338,9 +342,9 @@ ggplot(games)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release),main= "game r
 
 ```
 
-* We are creating a bar plot to visualize the distribution of game releases over the years and counting how many games were released in each year
+* The bar plot above shows the distribution of game releases over the years and counting how many games were released in each year
 * The number of video game releases has steadily increased over the years, with a notable spike in 2008.
-*From the year 2008 the game releases has been decreased.One possible explanation for the dip in releases in 2013 is the release of the PlayStation 4 and Xbox One consoles, which may have led to developers focusing on developing games for the new consoles.
+* From the year 2008 the game releases has been decreased.One possible explanation for the dip in releases in 2013 is the release of the PlayStation 4 and Xbox One consoles, which may have led to developers focusing on developing games for the new consoles.
 
 
 ```{r}
@@ -354,7 +358,7 @@ ggplot(data = games_final, aes(x = reorder(Genre, -table(Genre)[Genre]), fill = 
 
 ```
 
-* The bar graph gives the number of video games in each genre.The bar graph you displays the distribution of video games across different genres. 
+* The bar graph above gives the number of video games in each genre.The bar graph you displays the distribution of video games across different genres. 
 * It indicates that the "Action" genre is the most prevalent, with a significantly higher number of games compared to other genres which is around 1500. 
 * Following "Action," the next most popular genres are "Sports,"Shooter" and "Role-Playing," each containing in a range of 500 to 1000. 
 * Conversely, the graph reveals that the "Strategy," "Adventure," and "Puzzle" genres are relatively less popular, with fewer than 250 games in each category. This suggests that games falling under these genres are less common or less frequently released compared to the more dominant genres like "Action" and "Sports."
@@ -370,7 +374,7 @@ ggplot(data = games_final, aes(x = reorder(Platform, -table(Platform)[Platform])
 
 ```
 
-* The graph you provided shows the number of video games released by category. 
+* The graph above shows the number of video games released by platform. 
 * The x-axis of the graph shows the category of the game, and the y-axis shows the number of games released in that category.
 * The graph shows that the most popular platform for video game releases is the PS2, with over 1000 games released for that platform.
 * The next most popular platforms were the PS3 and Xbox 360 with over 700 games released for each of those platforms. The least popular platforms for video game releases were the Wii U and DC, with fewer than 200 games released for each of those platforms.
@@ -387,7 +391,7 @@ ggplot(data = games_final, aes(x = reorder(Platform, -table(Platform)[Platform])
 The idea of this research question was to get a sense of the proportion or percentage of games in the genre of 'Shooter' which had a high user rating which we defined at 8.0 or more. This was done in the following steps:
 
 * First, we calculate the point estimate for the proportion from our sample
-* Second, we calculate the standard error for out sample distribution. We use the t distribution as we don't know the standard deviation of the overall population
+* Second, we calculate the standard error for our sample distribution. We use the t distribution as we don't know the standard deviation of the overall population
 * Third, we calculate the critical t score that captures the 95% confidence interval for the proportion
 * Finally, we calculate the upper and lower bounds using the point estimate and standard errors
 
@@ -445,7 +449,7 @@ Interestingly, the proportion of of non-shooter games is around 0.337 which is h
 
 ## Research Question 2 : 
 
-**What are the average user scores for games developed by Nintendo, and how do they compare to other companies? Are these differences statistically significant?**
+**What are the average scores for games developed by Nintendo, and how do they compare to other companies? Are these differences statistically significant?**
 
 The objective of this research question was to look at games developed by the developer giant Nintendo, to determine is they did better on average compares to non-nintendo games, specifically in terms of their user scores and critic scores.
 
@@ -520,7 +524,7 @@ The scatter plots also clearly illustrate this difference. Nintendo benifits fro
 
 ## Research Question 3 : 
 
-**What is the Trend in global sales by year? How does this trend correlate to the usage of difference platforms?**
+**How does the trend in Global Sales by year look like, and how has recent trends impacted the popularity in platforms? **
 
 
 ```{r}
@@ -565,7 +569,7 @@ ggplot(sales_by_year, aes(x = Year_of_Release, y = Global_Sales)) +
 
 
 
-```{r warning=FALSE}
+```{r warning=FALSE,message=FALSE}
 max_platform <- games_final %>%
   group_by(Year_of_Release, Platform) %>%
   summarise(Total_Sales = sum(Global_Sales)) %>%
@@ -787,7 +791,7 @@ In the case of our tests, we are testing multiple user scores to determine wheth
 
 * We will utilize predictive modeling and classification methods to forecast sales patterns, recognize distinct market segments, and anticipate the success of video games
 
-* Explore the impact of new technologies, such as virtual reality and augmented reality, on video game sales. This could involve analyzing sales data from games that use these technologies to see how they are performing compared to traditional video games.
+* We will also explore the impact of new technologies, such as virtual reality and augmented reality, on video game sales. This could involve analyzing sales data from games that use these technologies to see how they are performing compared to traditional video games.
 
 ## References
 
