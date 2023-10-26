@@ -9,6 +9,7 @@ output:
       number_sections: true
       code_folding: hide
       
+      
 ---
 
 
@@ -145,10 +146,11 @@ ggplot(result, aes(x = Platform, y = NA_Rate)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-
+cat("\n")
 
 
 ```
+
 As we can see there is a clear capture issue for certain platforms, while other more poplar platforms like PC and Xbox 360 have an NA Rate of less than 25%.
 
 Hence, replacing the missing observations with an average value for the scores or sales would not make sense as it would distort the underlying platform specific behavior. Therefore, we decided to drop these observations
@@ -176,6 +178,8 @@ outlierKD2(games,Global_Sales,rm=FALSE,hist=TRUE,boxplt=TRUE,qqplt=TRUE)
 
 games_final= outlierKD2(games,Global_Sales,rm=TRUE,hist=FALSE)
 games_final<-na.omit(games_final)
+
+games=games_final
 ```
 
 As shown, the data with the inclusion the outliers, exhibits a substantial right-skew in both the histogram and boxplot, potentially affecting the validity of our statistical analyses.
@@ -282,16 +286,11 @@ The Q-Q plot you provided shows that the critic score distribution is slightly w
 
 ### Sales
 
-```{r}
-library(ezids)
-games_3=games
-
-
-games_3=outlierKD2(games_3,Global_Sales,rm=TRUE)
+```{r warning=FALSE}
 
 
 
-ggplot(data = games_3, mapping = aes(x = Global_Sales)) +
+ggplot(data = games_final, mapping = aes(x = Global_Sales)) +
   geom_histogram(fill = "skyblue", color = "black", bins = 15) +  
   labs(
     title = "Distribution of Global Sales",
@@ -307,8 +306,8 @@ ggplot(data = games_3, mapping = aes(x = Global_Sales)) +
 The histogram of global sales in millions of shows a right-skewed distribution.This skewness is because  that the majority of video games sell less than 0.3 million copies.The histogram is skewed to the right, with a long tail extending to the right. This means that there are a few video games that sell extremely well, but most video games sell relatively poorly.
 
 
-```{r}
-ggplot(data = games_3, mapping = aes(y = Global_Sales)) +
+```{r warning=FALSE}
+ggplot(data = games_final, mapping = aes(y = Global_Sales)) +
   geom_boxplot(fill = "orange", color = "black") +  
   labs(
     title = "Boxplot of Global Sales",
@@ -324,8 +323,8 @@ From the above boxplot we can infer that.The median global sales of video games 
 
 
 ```{r}
-qqnorm(games_3$Global_Sales,main = "Global Sales")
-qqline(games_3$Global_Sales)
+qqnorm(games_final$Global_Sales,main = "Global Sales")
+qqline(games_final$Global_Sales)
 
 ```
 
@@ -334,7 +333,7 @@ The QQ plot further emphasizes the right-skewed nature of the global sales data,
 ## Categorical Variables
 
 
-```{r}
+```{r warning=FALSE}
 ggplot(games)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release),main= "game releases over the years" )+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
 ```
@@ -385,7 +384,7 @@ The idea of this research question was to get a sense of the proportion or perce
 * Third, we calculate the critical t score that captures the 95% confidence interval for the proportion
 * Finally, we calculate the upper and lower bounds using the point estimate and standard errors
 
-```{r}
+```{r warning=FALSE}
 #----------------------------------------------------------------------------------------------------------------
 # SMART Q - Confidence interval for Shooter game ratings
 
@@ -559,7 +558,7 @@ ggplot(sales_by_year, aes(x = Year_of_Release, y = Global_Sales)) +
 
 
 
-```{r}
+```{r warning=FALSE}
 max_platform <- games_final %>%
   group_by(Year_of_Release, Platform) %>%
   summarise(Total_Sales = sum(Global_Sales)) %>%
