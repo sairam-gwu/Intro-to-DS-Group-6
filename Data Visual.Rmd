@@ -184,7 +184,3 @@ ggplot(data, aes(x = reorder(Genre, -Total_Sales), y = Total_Sales,fill=Genre)) 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-```{r}
-
-
-```
