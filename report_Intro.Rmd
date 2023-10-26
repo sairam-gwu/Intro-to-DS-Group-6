@@ -1,0 +1,91 @@
+---
+title: "Data Cleaning"
+output:
+  rmdformats::readthedown:
+    theme: cerulean
+    highlight: tango
+    code_folding: hide
+    toc_float: true
+date: "2023-10-10"
+---
+
+```{r setup, include=FALSE}
+# some of common options (and the defaults) are: 
+# include=T, eval=T, echo=T, results='hide'/'asis'/'markup',..., collapse=F, warning=T, message=T, error=T, cache=T, fig.width=6, fig.height=4, fig.dim=c(6,4) #inches, fig.align='left'/'center','right', 
+ knitr::opts_chunk$set(warning = F, results = "markup", message = F)
+#knitr::opts_chunk$set(warning = F, results = "hide", message = F)
+
+# knitr::opts_chunk$set(include = F)
+# knitr::opts_chunk$set(echo = TRUE)
+options(scientific=T, digits = 3) 
+# options(scipen=9, digits = 3) 
+# ‘scipen’: integer. A penalty to be applied when deciding to print numeric values in fixed or exponential notation.  Positive values bias towards fixed and negative towards scientific notation: fixed notation will be preferred unless it is more than ‘scipen’ digits wider.
+# use scipen=999 to prevent scientific notation at all times
+```
+
+# 1 Introduction
+
+The video game industry is a multi-billion dollar industry that is still expanding in terms of both influence and popularity. People of all ages and backgrounds love playing video games, and they have a significant impact on our culture and society.Using information that has been scraped from Metacritic, this study will look at video game performance and sales. Metacritic is an online platform that compiles reviews from multiple sources for video games, films, TV series, and music. We can spot trends and obtain insightful knowledge about the video game industry by examining Metacritic data. 
+
+
+## 1.1 Objective
+
+This research project's goal is to analyze video game sales and performance data that was taken from Metacritic using exploratory data analysis (EDA) and hypothesis testing in order to: Identify patterns and trends in video game sales and performance. Test hypotheses about the relationships between various variables, including release date, publisher, genre, metacritic scores, and platform. Learn about the elements that affect the success of video games and the video game business. 
+
+## 1.2 Data
+### The structure of the dataset : 
+
+Game Specific: 
+
+Name: The name of the video game 
+
+Genre: The genre of the video game 
+
+Platform: The platform(s) on which the video game was released 
+
+Developer: The developer of the video game 
+
+Publisher: The publisher of the video game 
+
+Year of Release: The year in which the video game was released 
+
+Scores: 
+
+Metacritic User Score: The score given to the game by users. 
+
+Metacritic Critic Score: The score given to the game by critics. 
+
+Sales: 
+
+North America: The number of units sold in North America 
+
+Europe: The number of units sold in Europe 
+
+Japan: The number of units sold in Japan 
+
+Global: The total number of units sold worldwide 
+
+
+## 1.3 Limitations 
+
+Only 6826 out of 16719 observations were complete with all variables. This means that a significant portion of the data is missing information 
+
+The games in the dataset can only be found on Metacritic. Thus, not all of the video games that have ever been released are included in the dataset. 
+
+Not all of the variables that affect sales are covered by the dataset. Information on variables like marketing expenditure, critical acclaim, and player involvement is absent from the dataset.
+
+## 1.4 Libraries
+
+ggplot2: A creative canvas where data transforms into captivating visual narratives. This library enables the artful crafting of plots, ensuring that data stories are not just seen but felt. 
+
+dplyr: The meticulous editor, refining dataset’s with surgical precision. It’s the toolkit for data shaping, sorting, and summarizing, ensuring that the narrative emerges with clarity and insight. 
+
+## 1.5 Research Questions: 
+
+->What percentage of shooter genre video games have a user score above 8.0? 
+
+->What are the average user scores for games developed by Nintendo, and how do they compare to other companies? Are these differences statistically significant? 
+
+->How does the trend in Global Sales by year look like, and how has recency impacted the popularity in platforms? 
+
+->Is there a statistically significant difference in mean sales for games with a rating of 7.5 or higher compared to those with a rating below 7.5? Can we determine a critical score that leads to higher sales? 
