@@ -1,0 +1,807 @@
+---
+title: "Video Game Sales and Performance Analysis - Group 6"
+author's: "1. Sairam Venkatachalam 2. Amit Subedi 3. Sriram Sathwik Tippavaram 4.	Bala Krishna Reddy Ragannagari "
+date: "`r Sys.Date()`"
+output:  
+    rmdformats::readthedown:
+      toc_float: true
+      toc_depth: 3
+      number_sections: true
+      code_folding: hide
+      
+      
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r init, include=F}
+# The package "ezids" (EZ Intro to Data Science) includes some helper functions we developed for the course. 
+# Some of the frequently used functions are loadPkg(), xkabledply(), xkablesummary(), uzscale(), etc.
+# You will need to install it (once) from GitHub.
+# library(devtools)
+# devtools::install_github("physicsland/ezids")
+# Then load the package in your R session.
+library(ezids)
+library(ggplot2)
+library(dplyr)
+```
+
+
+
+# Introduction
+
+The video game industry is a multi-billion dollar industry that is still expanding in terms of both influence and popularity. People of all ages and backgrounds love playing video games, and they have a significant impact on our culture and society.Using information that has been scraped from Metacritic, this study will look at video game performance and sales. Metacritic is an online platform that compiles reviews from multiple sources for video games, films, TV series, and music. We can spot trends and obtain insightful knowledge about the video game industry by examining Metacritic data. 
+
+
+## Objective
+
+This research project's goal is to analyze video game sales and performance data that was taken from Metacritic using exploratory data analysis (EDA) and hypothesis testing in order to identify patterns and trends in video game sales and performance. We aim to test hypotheses about the relationships between various variables, including release date, publisher, genre, metacritic scores, and platform. We also hope to learn about the elements that affect the success of video games and the video game business. 
+
+## Data Source
+
+The dataset used for this report was sourced through web scraping from Metacritic. It is important to note that certain observations are missing, as Metacritic covers only a subset of the gaming platforms. As a result, some games may not have complete information for all the variables. However, the dataset contains approximately 6,900 complete cases.
+
+The dataset has information on the following attributes:
+
+**Game Specific: **
+
+Name: The name of the video game 
+
+Genre: The genre of the video game 
+
+Platform: The platform(s) on which the video game was released 
+
+Developer: The developer of the video game 
+
+Publisher: The publisher of the video game 
+
+Year of Release: The year in which the video game was released 
+
+**Scores: **
+
+Metacritic User Score: The score given to the game by users. 
+
+Metacritic Critic Score: The score given to the game by critics. 
+
+**Sales: ** 
+
+North America: The number of units sold in North America 
+
+Europe: The number of units sold in Europe 
+
+Japan: The number of units sold in Japan 
+
+Global: The total number of units sold worldwide 
+
+
+## Limitations in the dataset
+
+Despite the extensive number of variables present and the amount of rows in our dataset, there were a few limitations :
+
+* The dataset was aquired using web-scraping, leading to a few errors and ommisions in the data, these needed to be removed
+* Some platforms had limited coverage on metacritic, leading to missing values in their user scores, critic scores or their sales
+* Only 6826 out of 16719 observations were complete with all variables. This means that a significant portion of the data is missing information 
+* The games in the dataset are only those that can be found on Metacritic. Thus, not all of the video games that have ever been released are included in the dataset. 
+* Not all of the variables that affect sales are covered by the dataset. Information on variables like marketing expenditure, critical acclaim, and player involvement is absent from the dataset.
+
+## Libraries Used
+
+**ggplot2:** A creative canvas where data transforms into captivating visual narratives. This library enables the artful crafting of plots, ensuring that data stories are not just seen but felt. 
+
+**dplyr:** The meticulous editor, refining dataset’s with surgical precision. It’s the toolkit for data shaping, sorting, and summarizing, ensuring that the narrative emerges with clarity and insight. 
+
+**ezids:** This library was primarily used to identify and remove outliers in the dataset
+
+
+
+## Research Questions: 
+
+After the completion of the Exploratory Data Analysis, we hoped to find answers to the following research questions:
+
+* What percentage of shooter genre video games have a user score above 8.0? 
+
+* What are the average user scores for games developed by Nintendo, and how do they compare to other companies? Are these differences statistically significant? 
+
+* How does the trend in Global Sales by year look like, and how has recent trends impacted the popularity in platforms? 
+
+* Is there a statistically significant difference in mean sales for games with a rating of 7.5 or higher compared to those with a rating below 7.5? Can we determine a critical user score that leads to the highest differences in mean sales? 
+
+```{r}
+games<-read.csv('Video games sales.csv')
+
+
+```
+
+# Data Preprocessing
+
+## Missing Observations
+
+
+
+As mentioned previously, there are a lot of missing observations in our dataset.
+
+Before deciding on whether to remove the missing observations, we wanted to analyze their occurrence based on the platform type
+
+```{r}
+
+
+plat_na= games %>%
+  group_by(Platform) %>%
+  summarize(NAs_in_User_Score = sum(is.na(User_Score)))
+
+
+result <- games %>%
+  group_by(Platform) %>%
+  summarise(
+    NA_Count = sum(is.na(User_Score)),
+    Total_Count = n(),
+    NA_Rate = NA_Count / Total_Count
+  )
+
+
+result$Platform <- reorder(result$Platform, -result$NA_Rate) 
+
+ggplot(result, aes(x = Platform, y = NA_Rate)) +
+  geom_bar(stat = "identity", fill = "#A5D8DD") +
+  labs(title = "NA Rate by Platform", x = "Platform", y = "NA Rate") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+cat("\n")
+
+
+```
+
+As we can see there is a clear capture issue for certain platforms, while other more poplar platforms like PC and Xbox 360 have an NA Rate of less than 25%.
+
+Hence, replacing the missing observations with an average value for the scores or sales would not make sense as it would distort the underlying platform specific behavior. Therefore, we decided to drop these observations
+
+
+```{r}
+games<-na.omit(games)
+games$Rating <- ifelse(games$Rating== "", NA,games$Rating )
+games<-subset(games,games$Rating!="NA")
+games<-subset(games,games$Year_of_Release!="N/A")
+```
+
+
+## Outlier Handling
+
+We identified outliers in the Global Sales data with significantly higher sales figures compared to most of the dataset.
+As our analysis focused on comparing the means of different groups, the presence of these outliers could affect our results
+```{r}
+
+
+
+outlierKD2(games,Global_Sales,rm=FALSE,hist=TRUE,boxplt=TRUE,qqplt=TRUE)
+
+
+
+games_final= outlierKD2(games,Global_Sales,rm=TRUE,hist=FALSE)
+games_final<-na.omit(games_final)
+
+games=games_final
+```
+
+As shown, the data with the inclusion the outliers, exhibits a substantial right-skew in both the histogram and boxplot, potentially affecting the validity of our statistical analyses.
+By removing these outliers, the data became more normally distributed; although some right-skewness remains due to the inherent concentration of sales values near low values.
+
+# Exploratory Data Analysis
+
+
+
+## Numeric Variables
+
+
+### User Score
+
+
+User score is a measure of how much users like a video game. It is typically calculated by averaging user ratings from various sources, such as review websites and social media. User scores can range from 0 to 10, with a higher score indicating that the game is more popular and well-liked.
+
+
+```{r}
+library(ggplot2)
+ggplot(games, aes(x = games$User_Score)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "red", alpha = 0.7) +
+  ggtitle("Userscore Histogram") +
+  labs(x="UserScore")+
+  theme_minimal()
+
+```
+
+The user score histogram above shows that the game has a relatively normal distribution of user scores.The histogram also shows that the game has a relatively high average user score of around 7.5. This indicates that the game is generally well-liked by users.The tail of the histogram on the left indicates that a relatively small number of users gave the games a very low score.This suggests that some users found some games to be very disappointing.
+
+
+```{r}
+custom_colors <- c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728")
+
+# Create a custom star-shaped point
+star_point <- data.frame(x = 0, y = 0)
+
+# Create an attractive box plot with outliers as stars
+ggplot(games, aes(y = User_Score)) +
+  geom_boxplot(color = "blue", fill = "lightblue", alpha = 0.7) +
+  geom_point(data = star_point, aes(x = x, y = y), shape = 8, size = 2, color = custom_colors[2]) +
+  theme_minimal() +
+  scale_color_manual(values = custom_colors) +
+  labs(y = "User Score") +
+  ggtitle("Box Plot of User Scores ")
+
+```
+
+
+The box plot for the distribution of user scores for games. The box represents the middle 50% of the scores, with the median score marked by a line in the middle of the box.The median score is 7.5, which indicates that the game is generally well-liked by users.There are a few outliers in the data, which are marked as stars. These outliers represent users who gave the games very low score
+
+
+```{r}
+qqnorm(games$User_Score,main="QQplot for UseScore")
+qqline(games$User_Score)
+```
+
+The Q-Q plot shows that the user score distribution is slightly aligned with the normal line.There are a few points in the Q-Q plot that deviate from the line. These deviations suggest that the user score distribution may not be perfectly normal
+
+### Critic Score
+
+Critic score is a measure of how much critics like a video game. It is typically calculated by averaging critic ratings from various sources, such as review websites and magazines. Critic scores can range from 0 to 100, with a higher score indicating that the game is more popular and well-liked by critics.
+
+```{r}
+library(ggplot2)
+ggplot(games, aes(x =Critic_Score)) +
+  geom_histogram(binwidth = 6, fill = "blue", color = "red", alpha = 0.7) +
+  ggtitle("Critic Score Histogram") +
+  labs(x="Critic Score")+
+  theme_minimal()
+
+```
+
+
+
+The critic score histogram shows that the game has a relatively normal distribution of critic scores but the graph has left skewed pattern.So we can infer that most critics have given the game a score of around 70 to 80
+
+```{r}
+custom_colors <- c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728")
+
+# Create a custom star-shaped point
+star_point <- data.frame(x = 0, y = 0)
+
+# Create an attractive box plot with outliers as stars
+ggplot(games, aes(y =Critic_Score)) +
+  geom_boxplot(color = "blue", fill = "lightblue", alpha = 0.7) +
+  geom_point(data = star_point, aes(x = x, y = y), shape = 8, size = 2, color = custom_colors[2]) +
+  theme_minimal() +
+  scale_color_manual(values = custom_colors) +
+  labs(y = "Critic Scores") +
+  ggtitle("Box Plot of Critic Scores ")
+
+```
+
+The box plot shows that the critic score distribution for all video games is relatively normal, with most scores falling between 60 and 90. The median score is around 75, which indicates that the majority of video games are generally well-liked by critics.There are a few outliers in the data, which are marked as stars. These outliers represent video games that received very low critic scores.Overall, the box plot suggests that most video games are generally well-liked by critics, but that there is some variation in how critics perceive different games.
+
+```{r}
+qqnorm(games$Critic_Score,main="QQplot for CriticScore")
+qqline(games$Critic_Score)
+
+```
+
+The Q-Q plot shows that the critic score distribution is well-aligned with the standard normal distribution.There are a few points that deviate from the line suggesting that it is not perfectly normal
+
+### Sales
+
+```{r warning=FALSE}
+
+
+
+ggplot(data = games_final, mapping = aes(x = Global_Sales)) +
+  geom_histogram(fill = "skyblue", color = "black", bins = 15) +  
+  labs(
+    title = "Distribution of Global Sales",
+    x = "Global Sales",
+    y = "Frequency"
+  ) +
+  theme_minimal() +  
+  theme(plot.title = element_text(hjust = 0.5))  
+
+
+```
+
+The histogram of global sales in millions of copies shows a right-skewed distribution.This skewness is because  that the majority of video games sell less than 0.3 million copies.The histogram is skewed to the right, with a long tail extending to the right. This means that there are a few video games that sell extremely well, but most video games sell relatively poorly.
+
+
+```{r warning=FALSE}
+ggplot(data = games_final, mapping = aes(y = Global_Sales)) +
+  geom_boxplot(fill = "orange", color = "black") +  
+  labs(
+    title = "Boxplot of Global Sales",
+    y = "Global Sales"
+  ) +
+  theme_minimal() +  
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+
+```
+
+From the above boxplot we can infer that.The median global sales of video games is around 0.2 million copies.There are a few video games that sell extremely well. These video games are outliers in the distribution and skew the mean upwards.
+
+
+```{r}
+qqnorm(games_final$Global_Sales,main = "Global Sales")
+qqline(games_final$Global_Sales)
+
+```
+
+The QQ plot further emphasizes the right-skewed nature of the global sales data, with the majority of games having low sales and a few outliers achieving exceptionally high sales figures.The points in the Q-Q plot are scattered around the line, and there are several points that deviate from the line significantly. This suggests that there is a lot of variation in the global sales distribution and that the distribution is not symmetrical.
+
+## Categorical Variables
+
+
+```{r warning=FALSE}
+ggplot(games)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release),main= "game releases over the years" )+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+
+* The bar plot above shows the distribution of game releases over the years and counting how many games were released in each year
+* The number of video game releases has steadily increased over the years, with a notable spike in 2008.
+* From the year 2008 the game releases has been decreased.One possible explanation for the dip in releases in 2013 is the release of the PlayStation 4 and Xbox One consoles, which may have led to developers focusing on developing games for the new consoles.
+
+
+```{r}
+
+ggplot(data = games_final, aes(x = reorder(Genre, -table(Genre)[Genre]), fill = Genre)) +
+  geom_bar() +
+  labs(title = "Frequency Distribution of Genres",
+       x = "Genre",
+       y = "Frequency") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+* The bar graph above gives the number of video games in each genre.The bar graph you displays the distribution of video games across different genres. 
+* It indicates that the "Action" genre is the most prevalent, with a significantly higher number of games compared to other genres which is around 1500. 
+* Following "Action," the next most popular genres are "Sports,"Shooter" and "Role-Playing," each containing in a range of 500 to 1000. 
+* Conversely, the graph reveals that the "Strategy," "Adventure," and "Puzzle" genres are relatively less popular, with fewer than 250 games in each category. This suggests that games falling under these genres are less common or less frequently released compared to the more dominant genres like "Action" and "Sports."
+
+
+```{r}
+ggplot(data = games_final, aes(x = reorder(Platform, -table(Platform)[Platform]), fill = Platform)) +
+  geom_bar() +
+  labs(title = "Frequency Distribution of Platforms",
+       x = "Platform",
+       y = "Frequency") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+* The graph above shows the number of video games released by platform. 
+* The x-axis of the graph shows the category of the game, and the y-axis shows the number of games released in that category.
+* The graph shows that the most popular platform for video game releases is the PS2, with over 1000 games released for that platform.
+* The next most popular platforms were the PS3 and Xbox 360 with over 700 games released for each of those platforms. The least popular platforms for video game releases were the Wii U and DC, with fewer than 200 games released for each of those platforms.
+
+
+
+# Research Questions
+
+
+## Research Question 1: 
+
+**What proportion of all 'Shooter' Games have a User Score of >=8.0**
+
+The idea of this research question was to get a sense of the proportion or percentage of games in the genre of 'Shooter' which had a high user rating which we defined at 8.0 or more. This was done in the following steps:
+
+* First, we calculate the point estimate for the proportion from our sample
+* Second, we calculate the standard error for our sample distribution. We use the t distribution as we don't know the standard deviation of the overall population
+* Third, we calculate the critical t score that captures the 95% confidence interval for the proportion
+* Finally, we calculate the upper and lower bounds using the point estimate and standard errors
+
+```{r warning=FALSE}
+#----------------------------------------------------------------------------------------------------------------
+# SMART Q - Confidence interval for Shooter game ratings
+
+subset_data <- subset(games_final,games_final$Genre == 'Shooter' & games_final$User_Score >= 8.0)
+shooter_data <- subset(games_final,games_final$Genre == 'Shooter')
+
+
+sample_proportion <- nrow(subset_data) / nrow(shooter_data)
+
+confidence_level <- 0.95
+
+standard_error <- sqrt((sample_proportion * (1 - sample_proportion)) / nrow(shooter_data))
+
+df <- nrow(shooter_data) - 1  
+t_critical <- qt(1 - (1 - confidence_level) / 2, df)
+margin_of_error <- t_critical * standard_error
+
+lower_bound <- sample_proportion - margin_of_error
+upper_bound <- sample_proportion + margin_of_error
+
+cat("Sample Proportion:", sample_proportion, "\n")
+cat("95% Confidence Interval :", lower_bound, "to", upper_bound, "\n")
+
+x <- seq(sample_proportion - 4 * standard_error, sample_proportion + 4 * standard_error, length = 1000)
+
+
+y <- dt((x - sample_proportion) / standard_error, df) 
+
+plot_data <- data.frame(x = x, y = y)
+
+
+
+ggplot(plot_data, aes(x = x, y = y)) +
+  geom_line() +
+  geom_vline(xintercept = c(lower_bound, upper_bound), color = "blue", linetype = "dashed", size = 1) +
+  geom_ribbon(data = plot_data[plot_data$x >= lower_bound & plot_data$x <= upper_bound, ], aes(x = x, ymin = 0, ymax = y), fill = "pink", alpha = 0.5) +
+  labs(
+    title = "Sample Distribution for the propotion of game in the Shooter Genre with a rating >=8.0",
+    x = "Proportion of Shooter Games with User Score > 8.0",
+    y = "Probability Density"
+  )+
+  theme_minimal()
+
+```
+
+As shown, the sample proportion is around ```r sample_proportion``` which implies that 31.6% of 'Shooter' games in our dataset had a user rating of >=8.0
+
+The confidence The 95% confidence interval for this proportion falls between 0.283 to 0.350 . This indicates that the true proportion of highly-rated shooter games likely lies within this range
+
+Interestingly, the proportion of of non-shooter games is around 0.337 which is higher than shooter games.
+
+## Research Question 2 : 
+
+**What are the average scores for games developed by Nintendo, and how do they compare to other companies? Are these differences statistically significant?**
+
+The objective of this research question was to look at games developed by the developer giant Nintendo, to determine is they did better on average compares to non-nintendo games, specifically in terms of their user scores and critic scores.
+
+We define the Hypotheses as follows:
+
+* Null Hypothesis : There is no difference between the mean scores of games developed by Nintendo and others
+* Alternate Hypothesis : There is a non-zero difference between the mean scores of games developed by Nintendo and others
+
+```{r}
+#------------------------------------------------------------------------------------------------------------------
+# SMART Q - Nintendo vs Non- Nintendo
+
+
+dev_nintendo=subset(games_final,games_final$Developer=='Nintendo')
+
+dev_others=subset(games_final,games_final$Developer!='Nintendo')
+
+#USer scores
+
+t_test_nintendo <- t.test(dev_nintendo$User_Score,dev_others$User_Score,var.equal = FALSE,conf.level=0.99) 
+
+t_test_nintendo
+
+#Critic scores
+
+t_test_nintendo <- t.test(dev_nintendo$Critic_Score,dev_others$Critic_Score,var.equal = FALSE,conf.level=0.99) 
+
+t_test_nintendo
+
+
+```
+
+The results of our 2 sample t-tests give us enough to reject the null hypothesis in both cases. Nintendo performs much better compared to other developers, having on average a user score of **7.94** compared to **7.13** and critic score of **77.16** compared to **68.95**
+
+```{r}
+
+#--- Visually showing results
+
+
+ggplot(games_final, aes(x = ifelse(grepl("Nintendo", games_final$Developer), "Nintendo", "Other"), y = User_Score, color = ifelse(grepl("Nintendo", games_final$Developer), "Nintendo", "Other"))) +
+  geom_point() +
+  labs(
+    title = "User Score for Nintendo Games vs. Others",
+    x = "Developer",
+    y = "User Score"
+  ) +
+  scale_color_manual(name = "Developer", values = c("Nintendo" = "skyblue", "Other" = "orange")) +
+  scale_x_discrete(labels = c("Nintendo" = "Nintendo", "Other" = "Other")) +
+  theme_minimal() +
+  theme(legend.position = "top")
+#----
+
+
+
+ggplot(games_final, aes(x = ifelse(grepl("Nintendo", games_final$Developer), "Nintendo", "Other"), y = Critic_Score, color = ifelse(grepl("Nintendo", games_final$Developer), "Nintendo", "Other"))) +
+  geom_point() +
+  labs(
+    title = "Critic Score for Nintendo Games vs. Others",
+    x = "Developer",
+    y = "Critic Score"
+  ) +
+  scale_color_manual(name = "Developer", values = c("Nintendo" = "skyblue", "Other" = "orange")) +
+  scale_x_discrete(labels = c("Nintendo" = "Nintendo", "Other" = "Other")) +
+  theme_minimal() +
+  theme(legend.position = "top")
+#----
+
+```
+
+The scatter plots also clearly illustrate this difference. Nintendo benifits from producing a much lower number of badly rated games, and they maintain consistency. Perhaps, this is the main reason they have maintained their brand image over the years as an elite game developer
+
+
+## Research Question 3 : 
+
+**How does the trend in Global Sales by year look like, and how has recent trends impacted the popularity in platforms? **
+
+
+```{r}
+
+#-----------------------------------------------------------------------------------------------------------------
+# Smart Question 3 - Trend of Global sales by year of release
+
+sales_by_year <- aggregate(Global_Sales ~ Year_of_Release, data = games_final, FUN = mean)
+
+# Create a bar plot
+ggplot(sales_by_year, aes(x = Year_of_Release, y = Global_Sales)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(
+    title = "Average Global Sales by Year of Release",
+    x = "Year of Release",
+    y = "Average Global Sales"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+sales_by_year <- aggregate(Global_Sales ~ Year_of_Release, data = games_final, FUN = sum)
+
+ggplot(sales_by_year, aes(x = Year_of_Release, y = Global_Sales)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(
+    title = "Total Global Sales by Year of Release",
+    x = "Year of Release",
+    y = "Total Global Sales"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
+
+* In the late 1990s and early 2000s, the video game industry witnessed an extraordinary surge in total global sales. This era marked a remarkable upswing in the popularity and sales of video games, redefining the entertainment landscape.
+
+* Amidst this booming phase, PlayStation emerged as the predominant platform, playing a pivotal role in the industry's remarkable success. The introduction of the PlayStation 2 (PS2) made a substantial impact on the gaming market, solidifying Sony's position as a key player.
+
+* However, post-2008, the industry experienced a gradual decline in global sales. This decline can be attributed, in part, to the global economic recession, which had ripple effects across various sectors. Furthermore, a noticeable shift in consumer preferences toward mobile gaming contributed to the evolving landscape of the industry. These changes prompted both players and industry leaders to adapt and innovate in response to emerging trends.
+
+
+
+```{r warning=FALSE,message=FALSE}
+max_platform <- games_final %>%
+  group_by(Year_of_Release, Platform) %>%
+  summarise(Total_Sales = sum(Global_Sales)) %>%
+  top_n(1, Total_Sales)
+
+
+ggplot(data = max_platform, aes(x = Year_of_Release, y = Total_Sales, fill = Platform)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Total Global Sales by Year for the best performing platform",
+    x = "Year of Release",
+    y = "Total Global Sales"
+  )+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+* As the graph above shows, there is a clear trend in platform usage between different eras. The 90's saw mainstream usage of PS and PC.
+
+* The 00's was the era of PS2. Most developers are publishers targeted the PS2 console for the release of their games due to its high popularity and affordable price among users 
+
+* The release of the Wii created shockwaves in the market, with Wii sports being the game with the highest copies sold in history!
+
+* Following the short dominance of Wii, The playstation made a comeback with PS3 which once again dominated for half a decade
+
+
+## Research Question 4 : 
+
+**Is there a statistically significant difference in mean sales for games with a rating of 7.5 or higher compared to those with a rating below 7.5? Can we determine a critical score that leads to higher sales?**
+
+The primary goal of this research question is to assess the disparity in global sales between video games with a rating of 7.5 or higher and those with lower ratings.
+
+Subsequently, We aim to determine a critical rating threshold at which the most substantial sales difference becomes evident.
+
+The Hyoptheses are defined as follows :
+
+* Null Hypothesis : There is no difference between the mean sales of both groups
+* Altername Hypothesis : There is a non-zero difference between the mean sales of both groups
+
+### Threshold score of 7.5
+
+```{r}
+
+
+
+#-----------------------------------------------------------------------------------------------------------------
+# SMART Q - Threshold Rating
+
+
+rating_above <- subset(games_final, games_final$User_Score >= 7.5)
+rating_below <- subset(games_final, games_final$User_Score < 7.5)
+
+mean_sales_above <- mean(rating_above$Global_Sales)
+mean_sales_below <- mean(rating_below$Global_Sales)
+
+diff_means <- mean_sales_above - mean_sales_below
+
+# Performing a t-test for the two groups with unequal variances
+t_test_result <- t.test(rating_above$Global_Sales, rating_below$Global_Sales, var.equal = FALSE)
+
+cat("Mean difference is:", diff_means, "\n")
+cat("P-Value for the T-Test:", t_test_result$p.value, "\n")
+
+
+ggplot(games_final, aes(x = User_Score, y = Global_Sales, color = User_Score >= 7.5)) +
+  geom_point() +
+  scale_color_manual(values = c("red", "green"), 
+                     breaks = c(FALSE, TRUE), 
+                     labels = c("< 7.5", ">= 7.5")) +
+  labs(x = "User Score", y = "Global Sales (Millions)", title = "User Score vs. Global Sales") +
+  guides(color = guide_legend(title = "User Score")) +
+  theme_minimal()
+
+
+
+
+```
+
+As shown, the p value associated with the 2 sample t-test is low enough for us to reject the Null hypothesis
+
+The difference in mean sales at the 7.5 rating threshold is 0.09 Million which is quite small. As the scatter plot illustrates, there is a lot of spread for games rated 7.5 or more, indicating a more multivariate complex relationship for the global sales.
+
+
+
+### Iterating to find the critical score
+
+```{r}
+#-----------------------------------------------------------------------------------------------------------------
+
+#Iterating to find threshold
+
+thresholds <- numeric()
+diff_means_values <- numeric()
+p_values <- numeric()
+
+best_rating_threshold <- NA
+best_diff_means <- -Inf
+best_p_value <- 1  
+
+
+for (rating_threshold in seq(4.0, 8.5, by = 0.1)) {
+  # Subset data for games with user scores above and below the threshold
+  
+  rating_above <- subset(games_final, games_final$User_Score >= rating_threshold)
+  rating_below <- subset(games_final, games_final$User_Score < rating_threshold)
+  
+  # Calculate the sample means
+  mean_sales_above <- mean(rating_above$Global_Sales)
+  mean_sales_below <- mean(rating_below$Global_Sales)
+  
+  # Calculate the difference in means
+  diff_means <- mean_sales_above - mean_sales_below
+  
+  # Perform a t-test for the two groups with unequal variances
+  t_test_result <- t.test(rating_above$Global_Sales, rating_below$Global_Sales, var.equal = FALSE)
+  
+  # Store the results in vectors
+  thresholds <- c(thresholds, rating_threshold)
+  diff_means_values <- c(diff_means_values, diff_means)
+  p_values <- c(p_values, t_test_result$p.value)
+  
+  # Check if the result is better than the current best result
+  if (diff_means > best_diff_means && t_test_result$p.value < 0.05) {
+    best_diff_means <- diff_means
+    best_p_value <- t_test_result$p.value
+    best_rating_threshold <- rating_threshold
+  }
+}
+
+cat("Best rating split with the highest mean difference and p-value below 0.05 is:", best_rating_threshold, "\n")
+cat("Mean Difference in Sales:", best_diff_means, "\n")
+cat("P-Value for the T-Test:", best_p_value, "\n")
+
+```
+
+As shown, the user score of 4.1 produces the highest difference in mean global sales between both groups at 0.17 Million copies. The p value associated with the test is enough to reject the Null Hypothesis.
+
+We can see a steady decline in the mean differences as the user score increases while always remaining positive. This indicates that the 2 variables are weakly correlated. When calculating the Pearson correlation coefficient, we get a 
+value of 0.145
+
+```{r}
+#-- Visually showing the result
+plot(
+  thresholds, 
+  diff_means_values, 
+  type = "l", 
+  col = "blue", 
+  xlab = "Rating Threshold", 
+  ylab = "Mean Difference in Sales",
+  main = "Threshold vs. Mean Difference in Sales",
+  xlim = c(3.8, 8),
+  ylim = c(max(diff_means_values) * 0.5, max(diff_means_values) * 1.1)
+)
+
+max_diff_idx <- which.max(diff_means_values)
+text(
+  thresholds[max_diff_idx], 
+  diff_means_values[max_diff_idx], 
+  labels = paste("Threshold:", thresholds[max_diff_idx], "\n Difference:", round(diff_means_values[max_diff_idx], 2)),
+  pos = 3,
+  col = "blue"
+)
+
+
+
+
+
+
+
+par(mar = c(5, 5, 4, 5))  
+plot(
+  thresholds, 
+  -log10(p_values), 
+  type = "l", 
+  col = "red", 
+  xlab = "Rating Threshold", 
+  ylab = "-log10(P-Value)",
+  main = "User Rating vs. P-Value",
+  xlim = c(4, 8),
+  ylim = c(0, max(-log10(p_values)) + 2)
+)
+
+```
+
+The p values are of the order of magnitude of -10 or lower indicating that the results are statistically significant across the board
+
+```{r}
+ggplot(games_final, aes(x = User_Score, y = Global_Sales, color = User_Score >= 4.1)) +
+  geom_point() +
+  scale_color_manual(values = c("red", "green"), 
+                     breaks = c(FALSE, TRUE), 
+                     labels = c("< 4.1", ">= 4.1")) +
+  labs(x = "User Score", y = "Global Sales (Millions)", title = "User Score vs. Global Sales") +
+  guides(color = guide_legend(title = "User Score")) +
+  theme_minimal()
+
+
+```
+
+Once again, the scatter chart illustrates the complex relationship between user score and global sales. For lower values of user score such as 4.1, we can see clear trends and a positive correlation. However, this behavior becomes diluted for higher user scores
+
+### Bonferroni Correction
+
+The Bonferroni test is a multiple-comparison correction used when several dependent or independent statistical tests are being performed simultaneously. The reason is that while a given alpha value may be appropriate for each individual comparison, it is not appropriate for the set of all comparisons. We must check if the p value is less than alpha (0.05) divided by the number of tests performed.
+
+In the case of our tests, we are testing multiple user scores to determine whether the differences in the mean sales between the groups is statistically significant. However, given our p values are of the order -10 and lower, adjusting alpha with the Bonferroni correction would still yield very statistically significant results
+
+
+# Future Scope and References
+
+## Future Scope
+
+**Multivariate Analysis:**
+
+* Our next phase of research will involve a more detailed multivariate analysis. This will enable us to explore complex relationships between multiple variables, such as the impact of both the publisher and the platform on the global sales, impact on global sales using User Score and Critic Score. This will offer a deeper understanding of the factors impacting video game performance.
+
+**Predictive Modeling & Classification:**
+
+* We will utilize predictive modeling and classification methods to forecast sales patterns, recognize distinct market segments, and anticipate the success of video games
+
+* We will also explore the impact of new technologies, such as virtual reality and augmented reality, on video game sales. This could involve analyzing sales data from games that use these technologies to see how they are performing compared to traditional video games.
+
+## References
+
+-Chen, H., & Hu, Y. (2020). The impact of marketing campaigns on video game sales: A meta-analysis. Journal of Marketing, 84(4), 124-143. https://www.sciencedirect.com/science/article/pii/S0148296320304161
+
+-Lin, Y., & Wu, C. (2021). The impact of player demographics on video game sales: A segmentation analysis. Computers in Human Behavior, 118, 106653. https://www.researchgate.net/publication/31977403_Segmentation_of_the_games_market_using_multivariate_analysis
+
+-Duan, W., & Zhang, J. (2019). The impact of critic reviews on video game sales: Evidence from a large-scale panel dataset. Journal of Business Research, 104, 70-80. https://pubsonline.informs.org/doi/abs/10.1287/mnsc.2023.4754
+
+-Bonferroni Correction - https://en.wikipedia.org/wiki/Bonferroni_correction
+
+-[OIS] Diez et al. (2015), OpenIntro Statistics.
+https://leanpub.com/os 

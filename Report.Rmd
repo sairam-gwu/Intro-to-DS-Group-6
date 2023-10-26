@@ -1,0 +1,224 @@
+---
+title: "Data Cleaning"
+output: html_document
+---
+
+
+```{r,include=FALSE}
+
+library(dplyr)
+
+library(ggplot2)
+library(ezids)
+
+```
+
+
+```{r}
+games<-read.csv('Video games sales.csv')
+
+nrow(games)
+```
+
+# Analyzing the spread of NA values
+
+```{r}
+
+
+
+
+plat_na= games %>%
+  group_by(Platform) %>%
+  summarize(NAs_in_User_Score = sum(is.na(User_Score)))
+
+
+
+print(plat_na)
+
+result <- games %>%
+  group_by(Platform) %>%
+  summarise(
+    NA_Count = sum(is.na(User_Score)),
+    Total_Count = n(),
+    NA_Rate = NA_Count / Total_Count
+  )
+
+print(result)
+
+
+
+result$Platform <- reorder(result$Platform, -result$NA_Rate) 
+
+ggplot(result, aes(x = Platform, y = NA_Rate)) +
+  geom_bar(stat = "identity", fill = "#A5D8DD") +
+  labs(title = "NA Rate by Platform", x = "Platform", y = "NA Rate") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+
+```
+
+# Cleaning null values
+
+```{r}
+games<-na.omit(games)
+unique(games$Rating)
+games$Rating <- ifelse(games$Rating== "", NA,games$Rating )
+unique(games$Rating)
+games<-subset(games,games$Rating!="NA")
+games<-subset(games,games$Year_of_Release!="N/A")
+nrow(games)
+```
+
+# OUtlier handling for sales
+
+
+
+```{r}
+outlierKD2(games,Global_Sales,rm=FALSE,hist=TRUE,boxplt=TRUE,qqplt=TRUE)
+
+
+games_final= outlierKD2(games,Global_Sales,rm=TRUE,hist=FALSE)
+games_final<-na.omit(games_final)
+```
+
+
+## Exploratory Data Analysis
+
+# Critic_Count	User_Score 
+
+```{r}
+library(ggplot2)
+ggplot(games, aes(x = games$User_Score)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "red", alpha = 0.7) +
+  ggtitle("Userscore Histogram") +
+  labs(x="UserScore")+
+  theme_minimal()
+
+custom_colors <- c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728")
+
+# Create a custom star-shaped point
+star_point <- data.frame(x = 0, y = 0)
+
+# Create an attractive box plot with outliers as stars
+ggplot(games, aes(y = User_Score)) +
+  geom_boxplot(color = "blue", fill = "lightblue", alpha = 0.7) +
+  geom_point(data = star_point, aes(x = x, y = y), shape = 8, size = 2, color = custom_colors[2]) +
+  theme_minimal() +
+  scale_color_manual(values = custom_colors) +
+  labs(y = "User Score") +
+  ggtitle("Box Plot of User Scores ")
+
+qqnorm(games$User_Score,main="QQplot for UseScore")
+qqline(games$User_Score)
+
+```
+
+```{r}
+library(ggplot2)
+ggplot(games, aes(x = games$Critic_Score)) +
+  geom_histogram(binwidth = 3, fill = "blue", color = "red", alpha = 0.7) +
+  ggtitle("Critic Score Histogram") +
+  labs(x="CriticScore")+
+  theme_minimal()
+
+custom_colors <- c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728")
+
+# Create a custom star-shaped point
+star_point <- data.frame(x = 0, y = 0)
+
+# Create an attractive box plot with outliers as stars
+ggplot(games, aes(y = Critic_Score)) +
+  geom_boxplot(color = "blue", fill = "lightblue", alpha = 0.7) +
+  geom_point(data = star_point, aes(x = x, y = y), shape = 8, size = 2, color = custom_colors[2]) +
+  theme_minimal() +
+  scale_color_manual(values = custom_colors) +
+  labs(y = "Critic Score") +
+  ggtitle("Box Plot of Critic Scores ")
+
+qqnorm(games$User_Score,main="QQplot for CriticScore")
+qqline(games$User_Score)
+```
+
+
+
+```{r}
+
+ggplot(data = games_final, aes(x = reorder(Genre, -table(Genre)[Genre]), fill = Genre)) +
+  geom_bar() +
+  labs(title = "Frequency Distribution of Genres",
+       x = "Genre",
+       y = "Frequency") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+  
+ggplot(data = games_final, aes(x = reorder(Platform, -table(Platform)[Platform]), fill = Platform)) +
+  geom_bar() +
+  labs(title = "Frequency Distribution of Platforms",
+       x = "Platform",
+       y = "Frequency") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+# Yearwise global sales
+
+```{r}
+
+
+sales_by_year <- aggregate(Global_Sales ~ Year_of_Release, data = games_final, FUN = sum)
+
+# Create a bar plot
+ggplot(sales_by_year, aes(x = Year_of_Release, y = Global_Sales)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(
+    title = "Total Global Sales by Year of Release",
+    x = "Year of Release",
+    y = "Total Global Sales"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+```
+
+#EDA of yea_wise_sale,genre,platform
+
+```{r}
+games_final%>%group_by(Platform)
+cnt<-games_final%>%group_by(Platform)%>%summarise(cnt=n())
+cnt<- cnt%>%arrange(desc(cnt))
+data <- cnt[order(cnt$cnt),]
+
+# Create a bar graph in ascending order
+ggplot(data, aes(x = reorder(Platform, -cnt), y = cnt,fill=Platform)) +
+  geom_bar(stat = "identity") +
+  labs(x="platform")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+games_final%>%group_by(Genre)
+cnt<-games_final%>%group_by(Genre)%>%summarise(cnt=n())
+cnt
+cnt<- cnt%>%arrange(desc(cnt))
+cnt
+data <- cnt[order(cnt$cnt), ]
+data
+# Create a bar graph in ascending order
+ggplot(data, aes(x = reorder(Genre, -cnt), y = cnt,fill=Genre)) +
+  geom_bar(stat = "identity") +
+  labs(x='Genre') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+ggplot(games_final)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release))+theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
