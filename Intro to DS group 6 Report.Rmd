@@ -1,5 +1,5 @@
 ---
-title: "Video Game Sales and Performance Analysis"
+title: "Video Game Sales and Performance Analysis - Group 6"
 author: "Sairam Venkatachalam"
 date: "`r Sys.Date()`"
 output:  
@@ -29,14 +29,14 @@ library(dplyr)
 ```
 
 
-# 1. Introduction
+#  Introduction
 
 
-## 1.1 Project Topic
+##  Project Topic
 
 The central focus of this project revolves around the comprehensive examination of video game sales and performance, delving into their dynamics, trends, and underlying factors to uncover valuable insights. Being avid video game enthusiasts, our team is looking to deep dive into the history of video game sales in order to find answers to our research questions
 
-## 1.2 Data Source
+## Data Source
 
 The dataset used for this report was sourced through web scraping, specifically from Metacritic. It is important to note that certain observations are missing, as Metacritic covers only a subset of the gaming platforms. As a result, some games may not have complete information for all the variables. However, the dataset contains approximately 6,900 complete cases.
 
@@ -60,7 +60,7 @@ The dataset includes the following fields:
 * Rating (ESRB ratings)
 
 
-## 1.3 Project objectives and research questions
+## Project objectives and research questions
 
 We will commence our analysis by conducting Exploratory Data Analysis on the dataset to unveil intriguing trends and patterns within the data.
 
@@ -79,9 +79,9 @@ games<-read.csv('Video games sales.csv')
 
 ```
 
-# 2. Data Preprocessing
+# Data Preprocessing
 
-## 2.1 Structure of the dataset
+## Structure of the dataset
 
 The dataset that we have used contains information on the following attributes:
 
@@ -103,7 +103,7 @@ The dataset that we have used contains information on the following attributes:
 * Rating (ESRB ratings)
 
 
-## 2.2 Data Cleaning
+## Data Cleaning
 
 ### Missing Observations
 
@@ -170,9 +170,215 @@ outlierKD2(games,Global_Sales,rm=FALSE,hist=TRUE,boxplt=TRUE,qqplt=TRUE)
 As shown, the data with the inclusion the outliers, exhibits a substantial right-skew in both the histogram and boxplot, potentially affecting the validity of our statistical analyses.
 By removing these outliers, the data became more normally distributed; although some right-skewness remains due to the inherent concentration of sales values near low values.
 
+# Exploratory Data Analysis
 
 
-# 4. Research Questions
+
+## Numeric Variables
+
+
+```{r} 
+ggplot(games)+
+  geom_bar(aes(x=Genre,fill=Genre))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+#games %>% count(Genre)
+
+#games %>% group_by(Genre) %>% summarise( 
+#  Critic_score_Na_count = sum(is.na(Critic_Score)))
+#games %>% group_by(Genre) %>% summarise( 
+#  Critic_count_Na_count = sum(is.na(Critic_Count)))
+#games %>% group_by(Genre) %>% summarise( 
+#  user_count_Na_count = sum(is.na(User_Count)))
+#games %>% group_by(Genre) %>% summarise( 
+#  user_score_Na_count = sum(is.na(User_Score)))
+```
+
+
+
+### User Score
+
+```{r}
+library(ggplot2)
+ggplot(games, aes(x = games$User_Score)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "red", alpha = 0.7) +
+  ggtitle("Userscore Histogram") +
+  labs(x="UserScore")+
+  theme_minimal()
+
+```
+
+User score is a measure of how much users like a video game. It is typically calculated by averaging user ratings from various sources, such as review websites and social media. User scores can range from 0 to 10, with a higher score indicating that the game is more popular and well-liked.
+
+**Histogram**
+
+The user score histogram you shows that the game has a relatively normal distribution of user scores.The histogram also shows that the game has a relatively high average user score of around 7.5. This indicates that the game is generally well-liked by users.The tail of the histogram on the left indicates that a relatively small number of users gave the games a very low score.This suggests that some users found the game to be very disappointing.
+
+
+```{r}
+custom_colors <- c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728")
+
+# Create a custom star-shaped point
+star_point <- data.frame(x = 0, y = 0)
+
+# Create an attractive box plot with outliers as stars
+ggplot(games, aes(y = User_Score)) +
+  geom_boxplot(color = "blue", fill = "lightblue", alpha = 0.7) +
+  geom_point(data = star_point, aes(x = x, y = y), shape = 8, size = 2, color = custom_colors[2]) +
+  theme_minimal() +
+  scale_color_manual(values = custom_colors) +
+  labs(y = "User Score") +
+  ggtitle("Box Plot of User Scores ")
+
+```
+
+
+The box plot for the distribution of user scores fr games. The box represents the middle 50% of the scores, with the median score marked by a line in the middle of the box.The median score is 7.5, which indicates that the game is generally well-liked by users.There are a few outliers in the data, which are marked as stars. These outliers represent users who gave the games very low score
+
+
+```{r}
+qqnorm(games$User_Score,main="QQplot for UseScore")
+qqline(games$User_Score)
+```
+
+The Q-Q plot shows that the user score distribution is slightly aligned with the normal line.There are a few points in the Q-Q plot that deviate from the line. These deviations suggest that the user score distribution may not be perfectly normal
+
+### Critic Score
+```{r}
+library(ggplot2)
+ggplot(games, aes(x =Critic_Score)) +
+  geom_histogram(binwidth = 6, fill = "blue", color = "red", alpha = 0.7) +
+  ggtitle("Critic Score Histogram") +
+  labs(x="Critic Score")+
+  theme_minimal()
+
+```
+
+Critic score is a measure of how much critics like a video game. It is typically calculated by averaging critic ratings from various sources, such as review websites and magazines. Critic scores can range from 0 to 100, with a higher score indicating that the game is more popular and well-liked by critics.
+
+
+The critic score histogram shows that the game has a relatively normal distribution of critic scores but the graph has left skewed pattern.So we can infer that most critics have given the game a score of around 70 to 80
+
+```{r}
+custom_colors <- c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728")
+
+# Create a custom star-shaped point
+star_point <- data.frame(x = 0, y = 0)
+
+# Create an attractive box plot with outliers as stars
+ggplot(games, aes(y =Critic_Score)) +
+  geom_boxplot(color = "blue", fill = "lightblue", alpha = 0.7) +
+  geom_point(data = star_point, aes(x = x, y = y), shape = 8, size = 2, color = custom_colors[2]) +
+  theme_minimal() +
+  scale_color_manual(values = custom_colors) +
+  labs(y = "Critic Scores") +
+  ggtitle("Box Plot of Critic Scores ")
+
+```
+
+The box plot shows that the critic score distribution for all video games is relatively normal, with most scores falling between 60 and 90. The median score is around 75, which indicates that the majority of video games are generally well-liked by critics.There are a few outliers in the data, which are marked as stars. These outliers represent video games that received very low critic scores.Overall, the box plot suggests that most video games are generally well-liked by critics, but that there is some variation in how critics perceive different games.
+
+```{r}
+qqnorm(games$Critic_Score,main="QQplot for CriticScore")
+qqline(games$Critic_Score)
+
+```
+
+The Q-Q plot you provided shows that the critic score distribution is slightly well-aligned with the standard normal distribution.There are several points that deviate from the line significantly
+
+### Sales
+
+```{r}
+library(ezids)
+games_3=games
+
+
+games_3=outlierKD2(games_3,Global_Sales,rm=TRUE)
+
+
+
+ggplot(data = games_3, mapping = aes(x = Global_Sales)) +
+  geom_histogram(fill = "skyblue", color = "black", bins = 15) +  
+  labs(
+    title = "Distribution of Global Sales",
+    x = "Global Sales",
+    y = "Frequency"
+  ) +
+  theme_minimal() +  
+  theme(plot.title = element_text(hjust = 0.5))  
+
+
+```
+
+The histogram of global sales in millions of shows a right-skewed distribution.This skewness is because  that the majority of video games sell less than 1 million copies.The histogram is skewed to the right, with a long tail extending to the right. This means that there are a few video games that sell extremely well, but most video games sell relatively poorly.
+
+
+```{r}
+ggplot(data = games_3, mapping = aes(y = Global_Sales)) +
+  geom_boxplot(fill = "orange", color = "black") +  
+  labs(
+    title = "Boxplot of Global Sales",
+    y = "Global Sales"
+  ) +
+  theme_minimal() +  
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+
+```
+
+From the above boxplot we can infer that.The median global sales of video games is around 0.2 million copies.There are a few video games that sell extremely well, with sales figures in the tens of millions or even hundreds of millions of copies. These video games are outliers in the distribution and skew the mean upwards.
+
+
+```{r}
+qqnorm(games_3$Global_Sales,main = "Global Sales")
+qqline(games_3$Global_Sales)
+
+```
+
+The QQ plot further emphasizes the right-skewed nature of the global sales data, with the majority of games having low sales and a few outliers achieving exceptionally high sales figures.The points in the Q-Q plot are scattered around the line, and there are several points that deviate from the line significantly. This suggests that there is a lot of variation in the global sales distribution and that the distribution is not symmetrical.
+
+## Categorical Variables
+
+
+```{r}
+ggplot(games)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release),main= "game releases over the years" )+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+
+We are creating a bar plot to visualize the distribution of game releases over the years and counting how many games were released in each year
+The number of video game releases has steadily increased over the years, with a notable spike in 2008.The most popular years for video game releases are 2016, 2017, and 2018, each with over 10,000 releases.While there is a general trend of increasing video game releases, there are some years with dips in releases, such as 2013 and 2020.One possible explanation for the dip in releases in 2013 is the release of the PlayStation 4 and Xbox One consoles, which may have led to developers focusing on developing games for the new consoles.
+
+
+```{r}
+
+ggplot(games)+geom_bar(aes(x=Genre,fill=Genre))+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+The bar graph gives the number of video games in each genre.The bar graph you displays the distribution of video games across different genres. It indicates that the "Action" genre is the most prevalent, with a significantly higher number of games compared to other genres which is around 3000. Following "Action," the next most popular genres are "Adventure," "Sports," and "Role-Playing," each containing over 2000 games, signifying a substantial presence in the dataset. Conversely, the graph reveals that the "Strategy," "Simulation," and "Miscellaneous" genres are relatively less popular, with fewer than 1000 games in each category. This suggests that games falling under these genres are less common or less frequently released compared to the more dominant genres like "Action" and "Adventure."
+
+
+```{r}
+library(dplyr)
+games%>%group_by(Platform)
+cnt<-games%>%group_by(Platform)%>%summarise(cnt=n())
+cnt<- cnt%>%arrange(desc(cnt))
+cnt
+data <- cnt[order(cnt$cnt),decreasing=TRUE ]
+
+# Create a bar graph in ascending order
+ggplot(data, aes(x = reorder(Platform, cnt), y = cnt,fill=Platform)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Games Released VS Platform") +
+  xlab("Category") +
+  ylab("Frequency (Count)") +
+  theme_minimal()
+```
+
+The graph you provided shows the number of video games released by category. The x-axis of the graph shows the category of the game, and the y-axis shows the number of games released in that category.The graph shows that the most popular platform for video game releases is the PS2, with over 1000 games released for that platform.The next most popular platforms were the PS3 and Xbox 360 with over 700 games released for each of those platforms. The least popular platforms for video game releases were the Wii U and PlayStation Vita, with fewer than 300 games released for each of those platforms.
+
+
+
+# Research Questions
 
 
 ```{r}
@@ -361,7 +567,7 @@ ggplot(sales_by_year, aes(x = Year_of_Release, y = Global_Sales)) +
 
 ```
 
-# 
+
 
 * In the late 1990s and early 2000s, the video game industry witnessed an extraordinary surge in total global sales. This era marked a remarkable upswing in the popularity and sales of video games, redefining the entertainment landscape.
 
