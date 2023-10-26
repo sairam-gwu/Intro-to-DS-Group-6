@@ -338,8 +338,9 @@ ggplot(games)+geom_bar(aes(x=Year_of_Release,fill=Year_of_Release),main= "game r
 
 ```
 
-We are creating a bar plot to visualize the distribution of game releases over the years and counting how many games were released in each year
-The number of video game releases has steadily increased over the years, with a notable spike in 2008.The most popular years for video game releases are 2016, 2017, and 2018, each with over 10,000 releases.While there is a general trend of increasing video game releases, there are some years with dips in releases, such as 2013 and 2020.One possible explanation for the dip in releases in 2013 is the release of the PlayStation 4 and Xbox One consoles, which may have led to developers focusing on developing games for the new consoles.
+* We are creating a bar plot to visualize the distribution of game releases over the years and counting how many games were released in each year
+* The number of video game releases has steadily increased over the years, with a notable spike in 2008.
+*From the year 2008 the game releases has been decreased.One possible explanation for the dip in releases in 2013 is the release of the PlayStation 4 and Xbox One consoles, which may have led to developers focusing on developing games for the new consoles.
 
 
 ```{r}
@@ -353,7 +354,10 @@ ggplot(data = games_final, aes(x = reorder(Genre, -table(Genre)[Genre]), fill = 
 
 ```
 
-The bar graph gives the number of video games in each genre.The bar graph you displays the distribution of video games across different genres. It indicates that the "Action" genre is the most prevalent, with a significantly higher number of games compared to other genres which is around 3000. Following "Action," the next most popular genres are "Adventure," "Sports," and "Role-Playing," each containing over 2000 games, signifying a substantial presence in the dataset. Conversely, the graph reveals that the "Strategy," "Simulation," and "Miscellaneous" genres are relatively less popular, with fewer than 1000 games in each category. This suggests that games falling under these genres are less common or less frequently released compared to the more dominant genres like "Action" and "Adventure."
+* The bar graph gives the number of video games in each genre.The bar graph you displays the distribution of video games across different genres. 
+* It indicates that the "Action" genre is the most prevalent, with a significantly higher number of games compared to other genres which is around 1500. 
+* Following "Action," the next most popular genres are "Sports,"Shooter" and "Role-Playing," each containing in a range of 500 to 1000. 
+* Conversely, the graph reveals that the "Strategy," "Adventure," and "Puzzle" genres are relatively less popular, with fewer than 250 games in each category. This suggests that games falling under these genres are less common or less frequently released compared to the more dominant genres like "Action" and "Sports."
 
 
 ```{r}
@@ -366,7 +370,10 @@ ggplot(data = games_final, aes(x = reorder(Platform, -table(Platform)[Platform])
 
 ```
 
-The graph you provided shows the number of video games released by category. The x-axis of the graph shows the category of the game, and the y-axis shows the number of games released in that category.The graph shows that the most popular platform for video game releases is the PS2, with over 1000 games released for that platform.The next most popular platforms were the PS3 and Xbox 360 with over 700 games released for each of those platforms. The least popular platforms for video game releases were the Wii U and PlayStation Vita, with fewer than 300 games released for each of those platforms.
+* The graph you provided shows the number of video games released by category. 
+* The x-axis of the graph shows the category of the game, and the y-axis shows the number of games released in that category.
+* The graph shows that the most popular platform for video game releases is the PS2, with over 1000 games released for that platform.
+* The next most popular platforms were the PS3 and Xbox 360 with over 700 games released for each of those platforms. The least popular platforms for video game releases were the Wii U and DC, with fewer than 200 games released for each of those platforms.
 
 
 
