@@ -837,4 +837,22 @@ ggplot(games_final, aes(x = Critic_Score, y = User_Score, color = Global_Sales))
 
 # Part 2 project
 
+library(reshape2)
 
+
+
+agg_data <- games_final %>%
+  group_by(Year_of_Release) %>%
+  summarise(NA_Sales = sum(NA_Sales), JP_Sales = sum(JP_Sales), EU_Sales = sum(EU_Sales))
+
+# Melt the aggregated dataframe to long format
+agg_data_long <- tidyr::gather(agg_data, key = 'Region', value = 'Sales', -Year_of_Release)
+
+# Plot the aggregated sales data
+ggplot(agg_data_long, aes(x = Year_of_Release, y = Sales, color = Region, group = Region)) +
+  geom_line() +
+  labs(title = 'Total Sales by Region Over Time',
+       x = 'Year of Release',
+       y = 'Total Sales',
+       color = 'Region') +
+  theme_minimal()
