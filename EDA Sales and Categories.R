@@ -835,4 +835,6 @@ ggplot(games_final, aes(x = Critic_Score, y = User_Score, color = Global_Sales))
 
 #
 
+# Part 2 proje
+
 
