@@ -184,3 +184,422 @@ ggplot(data, aes(x = reorder(Genre, -Total_Sales), y = Total_Sales,fill=Genre)) 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
+
+
+
+
+
+
+# Part-2 Project Work
+How do the sales vary by geography and how is this variation influenced by top selling games
+in each reaion?
+
+
+
+```{r}
+library(readr)
+data<- read_csv("Data_without NAvalues.csv")
+head(data)
+
+# Summary of the dataset
+summary(data)
+
+# Structure of the dataset
+str(data)
+
+
+```
+
+
+
+```{r}
+# Load necessary libraries
+library(tidyverse)
+library(ggplot2)
+
+# Load your dataset
+games <- read.csv('Data_without NAvalues.csv')
+
+# 1. Sales Distribution by Region
+games %>%
+  gather(key = "Region", value = "Sales", NA_Sales, EU_Sales, JP_Sales, Other_Sales) %>%
+  ggplot(aes(x = Sales)) +
+  geom_histogram(bins = 30, fill = "blue", color = "black") +
+  facet_wrap(~Region, scales = "free") +
+  theme_minimal() +
+  ggtitle("Distribution of Game Sales by Region")
+
+# 2. Top Games by Region (example for NA Sales)
+top_games_na <- games %>%
+  group_by(Name) %>%
+  summarize(Total_NA_Sales = sum(NA_Sales)) %>%
+  arrange(desc(Total_NA_Sales)) %>%
+  top_n(10)
+
+ggplot(top_games_na, aes(x = reorder(Name, Total_NA_Sales), y = Total_NA_Sales)) +
+  geom_bar(stat = "identity", fill = "orange") +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("Top 10 Games by Sales in North America")
+
+# You can replicate the above process for EU, JP, and Other regions
+
+# 3. Geographical Variation in Sales (more advanced visualizations might be needed)
+
+# 4. Influence of Game Features on Sales 
+games %>%
+  group_by(Genre) %>%
+  summarize(Total_Global_Sales = sum(Global_Sales)) %>%
+  ggplot(aes(x = reorder(Genre, Total_Global_Sales), y = Total_Global_Sales)) +
+  geom_bar(stat = "identity", fill = "green") +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("Global Sales by Game Genre")
+
+# Correlation between Critic Score and Global Sales
+ggplot(games, aes(x = Critic_Score, y = Global_Sales)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  theme_minimal() +
+  ggtitle("Critic Score vs Global Sales")
+
+
+# Reshape data to long format for regional analysis
+games_long <- games %>%
+  gather(key = "Region", value = "Sales", NA_Sales, EU_Sales, JP_Sales, Other_Sales)
+
+# Correlation between Critic Score and Sales by Region
+ggplot(games_long, aes(x = Critic_Score, y = Sales)) +
+  geom_point(aes(color = Region), alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_minimal() +
+  ggtitle("Critic Score vs Sales by Region")
+
+
+
+```
+
+
+```{r}
+# Aggregate sales by region and year
+annual_sales_by_region <- games %>%
+  mutate(Year_of_Release = as.numeric(Year_of_Release)) %>%
+  group_by(Year_of_Release) %>%
+  summarise(
+    NA_Sales = sum(NA_Sales, na.rm = TRUE),
+    EU_Sales = sum(EU_Sales, na.rm = TRUE),
+    JP_Sales = sum(JP_Sales, na.rm = TRUE),
+    Other_Sales = sum(Other_Sales, na.rm = TRUE)
+  )
+
+# Plotting annual sales trends by region
+ggplot(annual_sales_by_region, aes(x = Year_of_Release)) +
+  geom_line(aes(y = NA_Sales, color = "NA")) +
+  geom_line(aes(y = EU_Sales, color = "EU")) +
+  geom_line(aes(y = JP_Sales, color = "JP")) +
+  geom_line(aes(y = Other_Sales, color = "Other")) +
+  labs(color = "Region", y = "Sales", title = "Annual Sales Trend by Region") +
+  theme_minimal()
+
+
+```
+
+
+```{r}
+# Identifying top-selling games globally
+top_global_games <- games %>%
+  group_by(Name) %>%
+  summarise(Total_Global_Sales = sum(Global_Sales, na.rm = TRUE)) %>%
+  arrange(desc(Total_Global_Sales)) %>%
+  head(10)
+
+# Analyzing characteristics of top-selling games
+games %>%
+  filter(Name %in% top_global_games$Name) %>%
+  group_by(Name, Genre, Platform) %>%
+  summarise(Total_Global_Sales = sum(Global_Sales, na.rm = TRUE), .groups = 'drop') %>%
+  arrange(desc(Total_Global_Sales))
+
+
+
+```
+
+
+```{r}
+# Correlation analysis
+correlation_matrix <- cor(games[, c("NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales", "Critic_Score", "User_Score")], use = "complete.obs")
+
+# Simple linear regression example
+lm_model <- lm(Global_Sales ~ Critic_Score + User_Score, data = games)
+summary(lm_model)
+
+
+```
+```{r}
+
+library(plotly)
+
+# Interactive scatter plot
+p <- ggplot(games, aes(x = Critic_Score, y = Global_Sales)) +
+  geom_point(aes(text = paste("Name:", Name)), size = 2, alpha = 0.7) +
+  theme_minimal()
+
+ggplotly(p, tooltip = "text")
+
+
+```
+
+
+```{r}
+# T-test example
+t.test(games$NA_Sales, games$EU_Sales)
+
+
+
+
+```
+
+* The Welch Two Sample t-test comparing sales in North America and Europe shows a significant difference in means, with North American sales being higher than European sales on average.
+
+```{r}
+# Load necessary libraries
+library(dplyr)
+library(ggplot2)
+library(tidyr) # Make sure it's loaded for pivot_longer
+top_games_by_region <- function(data, region, n = 10) {
+  data %>%
+    group_by(Name) %>%
+    summarise(Total_Sales = sum(get(region), na.rm = TRUE)) %>%
+    top_n(n, Total_Sales) %>%
+    ungroup() %>%
+    arrange(desc(Total_Sales))
+}
+
+# Example for North America
+top_na_games <- top_games_by_region(games, "NA_Sales")
+
+# Analyzing cross-regional sales for top NA games
+cross_regional_sales <- function(top_games, data) {
+  data %>%
+    filter(Name %in% top_games$Name) %>%
+    select(Name, NA_Sales, EU_Sales, JP_Sales, Other_Sales) %>%
+    pivot_longer(cols = c(NA_Sales, EU_Sales, JP_Sales, Other_Sales), 
+                 names_to = "Region", values_to = "Sales") %>%
+    arrange(Name, Region)
+}
+
+# Example for top NA games
+top_na_games_sales <- cross_regional_sales(top_na_games, games)
+
+# Visualizing the sales of top NA games in all regions
+ggplot(top_na_games_sales, aes(x = Name, y = Sales, fill = Region)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "Sales of Top NA Games in Each Region", x = "Game", y = "Sales")
+
+
+# Identify top-selling games in the JP region
+top_jp_games <- top_games_by_region(games, "JP_Sales")
+
+# Identify top-selling games in the Other region
+top_other_games <- top_games_by_region(games, "Other_Sales")
+
+# Analyze cross-regional sales for top EU games
+top_eu_games_sales <- cross_regional_sales(top_eu_games, games)
+
+# Analyze cross-regional sales for top JP games
+top_jp_games_sales <- cross_regional_sales(top_jp_games, games)
+
+# Analyze cross-regional sales for top Other games
+top_other_games_sales <- cross_regional_sales(top_other_games, games)
+
+# Visualizing the sales of top EU games in all regions
+ggplot(top_eu_games_sales, aes(x = Name, y = Sales, fill = Region)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "Sales of Top EU Games in Each Region", x = "Game", y = "Sales")
+
+# Visualizing the sales of top JP games in all regions
+ggplot(top_jp_games_sales, aes(x = Name, y = Sales, fill = Region)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "Sales of Top JP Games in Each Region", x = "Game", y = "Sales")
+
+# Visualizing the sales of top Other games in all regions
+ggplot(top_other_games_sales, aes(x = Name, y = Sales, fill = Region)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "Sales of Top Other Games in Each Region", x = "Game", y = "Sales")
+
+
+```
+
+```{r}
+# Load the required libraries
+library(dplyr)
+library(ggplot2)
+library(gghighlight)
+
+games$Year_of_Release <- as.numeric(as.character(games$Year_of_Release))
+
+# Aggregate sales by year and region
+yearly_sales <- games %>%
+  group_by(Year_of_Release) %>%
+  summarise(NA_Sales = sum(NA_Sales, na.rm = TRUE),
+            EU_Sales = sum(EU_Sales, na.rm = TRUE),
+            JP_Sales = sum(JP_Sales, na.rm = TRUE),
+            Other_Sales = sum(Other_Sales, na.rm = TRUE)) %>%
+  ungroup()
+
+# Identify the best-selling game for each year in each region
+best_selling_games <- games %>%
+  group_by(Year_of_Release) %>%
+  summarise(
+    Best_Selling_NA = Name[which.max(NA_Sales)],
+    Best_Selling_EU = Name[which.max(EU_Sales)],
+    Best_Selling_JP = Name[which.max(JP_Sales)],
+    Best_Selling_Other = Name[which.max(Other_Sales)]
+  ) %>%
+  ungroup()
+
+# Install and load the tidyr package
+install.packages("tidyr")  # Run this line if tidyr is not installed yet
+library(tidyr)
+
+# Assuming yearly_sales is your data frame
+# Melt the yearly sales data for plotting
+yearly_sales_long <- yearly_sales %>%
+  pivot_longer(
+    cols = -Year_of_Release, 
+    names_to = "Region", 
+    values_to = "Sales"
+  )
+
+# Continue with your plotting or other operations
+
+# Create the plot
+sales_plot <- ggplot(yearly_sales_long, aes(x = Year_of_Release, y = Sales, color = Region)) +
+  geom_line() +
+  geom_point() +
+  theme_minimal()
+
+# Function to highlight and label best-selling games
+highlight_best_sellers <- function(plot, best_selling_games, region) {
+  plot +
+    gghighlight(max(Sales), unselect_params = list(size = 1)) +
+    geom_text(data = best_selling_games, aes(label = get(paste0("Best_Selling_", region)), 
+                                             x = Year_of_Release, 
+                                             y = yearly_sales[[region]]),
+              nudge_y = 5, check_overlap = TRUE, color = "black") +
+    labs(title = paste0("Annual ", region, " Sales and Best-Selling Game"))
+}
+
+install.packages("ggrepel")  # Run this line if ggrepel is not installed yet
+library(ggrepel)
+# Pivot the best_selling_games to long format
+best_selling_games_long <- best_selling_games %>%
+  pivot_longer(
+    cols = starts_with("Best_Selling_"),
+    names_to = "Region",
+    values_to = "Name",
+    names_prefix = "Best_Selling_"
+  )
+
+# Now use this long format in your geom_text_repel call
+highlighted_plot <- sales_plot + 
+  geom_point() +
+  gghighlight(max(Sales)) +
+  geom_text_repel(
+    data = best_selling_games_long,
+    aes(label = Name, x = Year_of_Release, y = Sales),
+    box.padding = 0.35
+  ) +
+  labs(title = "Annual Sales by Region with Best-Selling Game Highlighted")
+
+print(highlighted_plot)
+
+
+
+
+```
+
+
+```{r}
+
+library(dplyr)
+library(ggplot2)
+library(gghighlight)
+library(tidyr)
+library(ggrepel)
+
+# Assuming 'games' is your dataset
+games$Year_of_Release <- as.numeric(as.character(games$Year_of_Release))
+
+# Aggregate sales by year and region
+yearly_sales <- games %>%
+  group_by(Year_of_Release) %>%
+  summarise(
+    NA_Sales = sum(NA_Sales, na.rm = TRUE),
+    EU_Sales = sum(EU_Sales, na.rm = TRUE),
+    JP_Sales = sum(JP_Sales, na.rm = TRUE),
+    Other_Sales = sum(Other_Sales, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Identify the best-selling game for each year in each region
+best_selling_games <- games %>%
+  group_by(Year_of_Release) %>%
+  summarise(
+    Best_Selling_NA = Name[which.max(NA_Sales)],
+    Best_Selling_EU = Name[which.max(EU_Sales)],
+    Best_Selling_JP = Name[which.max(JP_Sales)],
+    Best_Selling_Other = Name[which.max(Other_Sales)]
+  ) %>%
+  ungroup()
+
+# Prepare the data for plotting
+yearly_sales_long <- yearly_sales %>%
+  pivot_longer(
+    cols = -Year_of_Release, 
+    names_to = "Region", 
+    values_to = "Sales"
+  )
+
+# Pivot the best_selling_games to long format
+best_selling_games_long <- best_selling_games %>%
+  pivot_longer(
+    cols = starts_with("Best_Selling_"),
+    names_to = "Region",
+    values_to = "Game_Name",
+    names_prefix = "Best_Selling_"
+  ) %>%
+  # Make the region names match between the two data frames
+  mutate(Region = sub("NA", "NA_Sales", Region)) %>%
+  mutate(Region = sub("Other", "Other_Sales", Region))
+
+# Join best_selling_games_long with yearly_sales_long
+best_selling_games_with_sales <- yearly_sales_long %>%
+  left_join(best_selling_games_long, by = c("Year_of_Release", "Region"))
+
+# Create the plot
+sales_plot <- ggplot(yearly_sales_long, aes(x = Year_of_Release, y = Sales, color = Region)) +
+  geom_line() +
+  geom_point() +
+  theme_minimal()
+
+# Add labels for best-selling games
+highlighted_plot <- sales_plot + 
+  geom_text_repel(
+    data = best_selling_games_with_sales,
+    aes(label = Game_Name, x = Year_of_Release, y = Sales),
+    box.padding = 0.35,
+    max.overlaps = Inf
+  ) +
+  labs(title = "Annual Sales by Region with Best-Selling Game Highlighted")
+
+print(highlighted_plot)
+
+
+
+
+```
