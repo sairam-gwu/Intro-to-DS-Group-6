@@ -532,10 +532,8 @@ library(gghighlight)
 library(tidyr)
 library(ggrepel)
 
-# Assuming 'games' is your dataset
 games$Year_of_Release <- as.numeric(as.character(games$Year_of_Release))
 
-# Aggregate sales by year and region
 yearly_sales <- games %>%
   group_by(Year_of_Release) %>%
   summarise(
@@ -545,8 +543,6 @@ yearly_sales <- games %>%
     Other_Sales = sum(Other_Sales, na.rm = TRUE)
   ) %>%
   ungroup()
-
-# Identify the best-selling game for each year in each region
 best_selling_games <- games %>%
   group_by(Year_of_Release) %>%
   summarise(
@@ -557,7 +553,75 @@ best_selling_games <- games %>%
   ) %>%
   ungroup()
 
-# Prepare the data for plotting
+yearly_sales_long <- yearly_sales %>%
+  pivot_longer(
+    cols = -Year_of_Release, 
+    names_to = "Region", 
+    values_to = "Sales"
+  )
+
+best_selling_games_long <- best_selling_games %>%
+  pivot_longer(
+    cols = starts_with("Best_Selling_"),
+    names_to = "Region",
+    values_to = "Game_Name",
+    names_prefix = "Best_Selling_"
+  ) %>%
+  mutate(Region = sub("NA", "NA_Sales", Region)) %>%
+  mutate(Region = sub("Other", "Other_Sales", Region))
+
+best_selling_games_with_sales <- yearly_sales_long %>%
+  left_join(best_selling_games_long, by = c("Year_of_Release", "Region"))
+
+sales_plot <- ggplot(yearly_sales_long, aes(x = Year_of_Release, y = Sales, color = Region)) +
+  geom_line() +
+  geom_point() +
+  theme_minimal()
+
+highlighted_plot <- sales_plot + 
+  geom_text_repel(
+    data = best_selling_games_with_sales,
+    aes(label = Game_Name, x = Year_of_Release, y = Sales),
+    box.padding = 0.35,
+    max.overlaps = Inf
+  ) +
+  labs(title = "Annual Sales by Region with Best-Selling Game Highlighted")
+
+print(highlighted_plot)
+
+
+
+
+```
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(gghighlight)
+library(tidyr)
+library(ggrepel)
+
+# Assuming 'games' is your dataset
+games$Year_of_Release <- as.numeric(as.character(games$Year_of_Release))
+
+# Aggregate sales by year and region
+yearly_sales <- games %>%
+  group_by(Year_of_Release) %>%
+  summarise(
+    NA_Sales = sum(NA_Sales, na.rm = TRUE),
+    EU_Sales = sum(EU_Sales, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+best_selling_games <- games %>%
+  group_by(Year_of_Release) %>%
+  summarise(
+    Best_Selling_NA = Name[which.max(NA_Sales)],
+    Best_Selling_EU = Name[which.max(EU_Sales)]
+  ) %>%
+  ungroup()
+
 yearly_sales_long <- yearly_sales %>%
   pivot_longer(
     cols = -Year_of_Release, 
@@ -573,11 +637,10 @@ best_selling_games_long <- best_selling_games %>%
     values_to = "Game_Name",
     names_prefix = "Best_Selling_"
   ) %>%
-  # Make the region names match between the two data frames
   mutate(Region = sub("NA", "NA_Sales", Region)) %>%
-  mutate(Region = sub("Other", "Other_Sales", Region))
+  mutate(Region = sub("EU", "EU_Sales", Region))
 
-# Join best_selling_games_long with yearly_sales_long
+
 best_selling_games_with_sales <- yearly_sales_long %>%
   left_join(best_selling_games_long, by = c("Year_of_Release", "Region"))
 
@@ -587,7 +650,6 @@ sales_plot <- ggplot(yearly_sales_long, aes(x = Year_of_Release, y = Sales, colo
   geom_point() +
   theme_minimal()
 
-# Add labels for best-selling games
 highlighted_plot <- sales_plot + 
   geom_text_repel(
     data = best_selling_games_with_sales,
@@ -595,11 +657,114 @@ highlighted_plot <- sales_plot +
     box.padding = 0.35,
     max.overlaps = Inf
   ) +
-  labs(title = "Annual Sales by Region with Best-Selling Game Highlighted")
+  labs(title = "Annual Sales by Region with Best-Selling Game Highlighted (NA and EU)")
 
 print(highlighted_plot)
 
+```
 
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(ggrepel)
+
+games$Year_of_Release <- as.numeric(as.character(games$Year_of_Release))
+
+ear
+na_sales <- games %>%
+  group_by(Year_of_Release) %>%
+  summarise(NA_Sales = sum(NA_Sales, na.rm = TRUE)) %>%
+  ungroup()
+na_best_selling_genres <- games %>%
+  group_by(Year_of_Release) %>%
+  summarise(Best_Selling_Genre = Genre[which.max(NA_Sales)]) %>%
+  ungroup()
+
+
+na_sales_with_genre <- na_sales %>%
+  left_join(na_best_selling_genres, by = "Year_of_Release")
+
+
+na_genre_sales_plot <- ggplot(na_sales_with_genre, aes(x = Year_of_Release, y = NA_Sales)) +
+  geom_line() +
+  geom_point() +
+  geom_text_repel(
+    aes(label = Best_Selling_Genre),
+    nudge_y = 5,
+    box.padding = 0.35,
+    max.overlaps = Inf
+  ) +
+  theme_minimal() +
+  labs(title = "NA Annual Sales with Best-Selling Genre Highlighted")
+
+print(na_genre_sales_plot)
+
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(ggrepel)
+
+
+games$Year_of_Release <- as.numeric(as.character(games$Year_of_Release))
+
+na_sales <- games %>%
+  group_by(Year_of_Release, Genre) %>%
+  summarise(NA_Sales = sum(NA_Sales, na.rm = TRUE)) %>%
+  ungroup()
+
+
+na_best_selling_genres <- na_sales %>%
+  arrange(desc(NA_Sales)) %>%
+  group_by(Year_of_Release) %>%
+  slice(1) %>%
+  ungroup()
+
+# Create a bar plot for NA region only with each genre a different color
+na_genre_sales_plot <- ggplot(na_best_selling_genres, aes(x = Year_of_Release, y = NA_Sales, fill = Genre)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set3") +  
+  labs(title = "NA Annual Sales with Best-Selling Genre Highlighted", x = "Year of Release", y = "Sales") +
+  theme(legend.title = element_blank()) 
+
+print(na_genre_sales_plot)
+
+
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(ggrepel)
+
+
+games$Year_of_Release <- as.numeric(as.character(games$Year_of_Release))
+
+eu_sales <- games %>%
+  group_by(Year_of_Release, Genre) %>%
+  summarise(EU_Sales = sum(EU_Sales, na.rm = TRUE)) %>%
+  ungroup()
+eu_best_selling_genres <- eu_sales %>%
+  arrange(desc(EU_Sales)) %>%
+  group_by(Year_of_Release) %>%
+  slice(1) %>%
+  ungroup()
+
+
+eu_genre_sales_plot <- ggplot(eu_best_selling_genres, aes(x = Year_of_Release, y = EU_Sales, fill = Genre)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set3") +  
+  labs(title = "EU Annual Sales with Best-Selling Genre Highlighted", x = "Year of Release", y = "Sales") +
+  theme(legend.title = element_blank()) 
+
+print(eu_genre_sales_plot)
 
 
 ```
