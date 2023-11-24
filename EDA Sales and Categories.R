@@ -1,4 +1,5 @@
 
+```{r}
 library(ezids)
 library(ggplot2)
 library(dplyr)
@@ -6,9 +7,9 @@ library(tidyr)
 
 games=read.csv("Video games sales.csv")
 head(games,5)
+```
 
-
-
+````{r}
 games<-na.omit(games)
 unique(games$Rating)
 games$Rating <- ifelse( games$Rating== "", NA,games$Rating )
@@ -17,6 +18,7 @@ games<-subset(games,games$Rating!="NA")
 games<-subset(games,games$Year_of_Release!="N/A")
 nrow(games)
 
+```
 
 
 ggplot(data=games, mapping=aes(x=Global_Sales)) +
