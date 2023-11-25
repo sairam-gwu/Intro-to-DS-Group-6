@@ -88,16 +88,24 @@ ggplot(platform_occurrence, aes(x = reorder(Platform, -Count), y = Count)) +
 
 # For multi platform games
 
-platform_occurrence <- multiple_platform_games %>%
+platform_occurrence_multi <- multiple_platform_games %>%
   group_by(Platform) %>%
   summarise(Count = n()) %>%
   arrange(desc(Count))
 
-ggplot(platform_occurrence, aes(x = reorder(Platform, -Count), y = Count)) +
-  geom_bar(stat = "identity", fill = "skyblue", color = "black") +
-  labs(title = "Occurrence of Platforms for Multiple-Platform Games",
+ggplot(platform_occurrence_multi, aes(x = reorder(Platform, -Count), y = Count)) +
+  geom_bar(stat = "identity", fill = "lightcoral", color = "black") +
+  labs(title = "Occurrence of Platforms for Multi-Platform Games",
        x = "Platform",
        y = "Count") +
   theme_minimal()
 
+platform_difference <- merge(platform_occurrence, platform_occurrence_multi, by = "Platform", suffixes = c("_Single", "_Multi"))
+platform_difference$Difference <- platform_difference$Count_Multi - platform_difference$Count_Single
 
+ggplot(platform_difference, aes(x = reorder(Platform, -Difference), y = Difference)) +
+  geom_bar(stat = "identity", fill = "lightgreen", color = "black") +
+  labs(title = "Difference in Platform Occurrence between Single and Multi-Platform Games",
+       x = "Platform",
+       y = "Difference") +
+  theme_minimal()
