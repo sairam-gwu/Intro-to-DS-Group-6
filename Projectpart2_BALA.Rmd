@@ -92,15 +92,70 @@ ggplot(games, aes(x = Critic_Score, y = NA_Sales)) +
        x = "Critic_Score",
        y = "NA Sales")
 ```
+```{r}
+filtered_data <- subset(games,Critic_Score > 75)
+filtered_data
 
+
+
+
+
+ggplot(filtered_data, aes(x = reorder(Platform, -table(Platform)[Platform]), y = NA_Sales, fill = Platform)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total NA Sales by Platform (Filtered Data)",
+       x = "Platform",
+       y = "NA Sales") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+ggplot(filtered_data, aes(x = reorder(Genre, -table(Genre)[Genre]), y = NA_Sales, fill = Genre)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total NA Sales by Genre (Filtered Data)",
+       x = "Genre",
+       y = "NA Sales") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
 ```{r}
 library(ggplot2)
 ggplot(games, aes(x = Critic_Score, y = EU_Sales)) +
   geom_point(color = "blue", size = 3) +
-  labs(title = "Scatter Plot: ritic_Score vs. EU Sales",
+  labs(title = "Scatter Plot: Critic_Score vs. EU Sales",
        x = "Critic_Score",
        y = "EU Sales")
 ```
+```{r}
+filtered_data <- subset(games,Critic_Score > 75)
+filtered_data
+
+
+
+
+
+ggplot(filtered_data, aes(x = reorder(Platform, -table(Platform)[Platform]), y = EU_Sales, fill = Platform)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total Eu Sales by Platform (Filtered Data)",
+       x = "Platform",
+       y = "NA Sales") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+ggplot(filtered_data, aes(x = reorder(Genre, -table(Genre)[Genre]), y = EU_Sales, fill = Genre)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total EU Sales by Genre (Filtered Data)",
+       x = "Genre",
+       y = "EU Sales") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+
 
 ```{r}
 library(ggplot2)
@@ -109,10 +164,26 @@ ggplot(games, aes(x = Critic_Score, y = JP_Sales)) +
   labs(title = "Scatter Plot: Critic_Score vs. JP Sales",
        x = "Critic_Score",
        y = "JP Sales")
+
+
 ```
+
 ```{r}
 filtered_data <- subset(games,Critic_Score > 62)
 filtered_data
+
+
+ordered_platforms <- with(filtered_data, levels(reorder(Platform, -Global_Sales)))
+
+
+ggplot(filtered_data, aes(x = reorder(Platform, -table(Platform)[Platform]), y = Global_Sales, fill = Platform)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total JP Sales by Platform (Filtered Data)",
+       x = "Platform",
+       y = "Global Sales") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
 
 ```
 
@@ -127,5 +198,20 @@ ggplot(games, aes(x = Critic_Score, y =Global_Sales)) +
 ```
 
 ```{r}
+filtered_data <- subset(games,Critic_Score > 75)
+filtered_data
+
+
+ordered_platforms <- with(filtered_data, levels(reorder(Platform, Global_Sales)))
+
+
+ggplot(filtered_data, aes(x = reorder(Platform, -table(Platform)[Platform]), y = Global_Sales, fill = Platform)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total Global Sales by Platform (Filtered Data)",
+       x = "Platform",
+       y = "Global Sales") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
 
 ```
