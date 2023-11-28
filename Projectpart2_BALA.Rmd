@@ -85,5 +85,47 @@ correlation_matrix <- cor(numeric_columns)
 corrplot(correlation_matrix, method = "color", type = "upper", order = "hclust", tl.col = "black", tl.srt = 45)
 ```
 ```{r}
+library(ggplot2)
+ggplot(games, aes(x = Critic_Score, y = NA_Sales)) +
+  geom_point(color = "blue", size = 3) +
+  labs(title = "Scatter Plot: Critic_Score vs. NA Sales",
+       x = "Critic_Score",
+       y = "NA Sales")
+```
+
+```{r}
+library(ggplot2)
+ggplot(games, aes(x = Critic_Score, y = EU_Sales)) +
+  geom_point(color = "blue", size = 3) +
+  labs(title = "Scatter Plot: ritic_Score vs. EU Sales",
+       x = "Critic_Score",
+       y = "EU Sales")
+```
+
+```{r}
+library(ggplot2)
+ggplot(games, aes(x = Critic_Score, y = JP_Sales)) +
+  geom_point(color = "blue", size = 3) +
+  labs(title = "Scatter Plot: Critic_Score vs. JP Sales",
+       x = "Critic_Score",
+       y = "JP Sales")
+```
+```{r}
+filtered_data <- subset(games,Critic_Score > 62)
+filtered_data
+
+```
+
+
+```{r}
+library(ggplot2)
+ggplot(games, aes(x = Critic_Score, y =Global_Sales)) +
+  geom_point(color = "blue", size = 3) +
+  labs(title = "Scatter Plot: critic_score vs. Global_ Sales",
+       x = "Critic_Score",
+       y = "Global_Sales")
+```
+
+```{r}
 
 ```
