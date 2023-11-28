@@ -14,9 +14,34 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-data=read.csv('~/Documents/GitHub/Intro-to-DS-Group-6/Video games sales.csv')
-str(data)
+```{r}
+games<-read.csv('Video games sales.csv')
+str(games)
+```
+
+
+```{r}
+games$Platform<-as.factor(games$Platform)
+games$Year_of_Release<-as.factor(games$Year_of_Release)
+games$Genre<-as.factor(games$Genre)
+games$Publisher<-as.factor(games$Publisher)
+games$Developer<-as.factor(games$Developer)
+games$Rating<-as.factor(games$Rating)
+str(games)
+```
+
+```{r}
+library(dplyr)
+games<-na.omit(games)
+unique(games$Rating)
+games$Rating <- ifelse(games$Rating== "", NA,games$Rating )
+unique(games$Rating)
+games<-subset(games,games$Rating!="NA")
+games<-subset(games,games$Year_of_Release!="N/A")
+```
+
+```{r}
+nrow(games)
 ```
 
 ## Including Plots
@@ -24,42 +49,41 @@ str(data)
 You can also embed plots, for example:
 
 ```{r pressure, echo=FALSE}
-total_sales<-colSums(data[,c("NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales", "Global_Sales")])
+total_sales<-colSums(games[,c("NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales", "Global_Sales")])
 print(total_sales)
 ```
 
 Total number of sales
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-```{r}
-top_games_na <- data[order(-data$NA_Sales), ][1, ]
-top_games_eu <- data[order(-data$EU_Sales), ][1, ]
-top_games_jp <- data[order(-data$JP_Sales), ][1, ]
-top_games_global <- data[order(-data$Global_Sales), ][1, ]
-top_games_other <- data[order(-data$Other_Sales), ][1, ]
-print(top_games_na)
-print(top_games_eu)
-print(top_games_jp)
-print(top_games_global)
-print(top_games_other)
-```
 
-```{r}
-top_selling_games <- bind_rows(top_games_na ,top_games_eu,top_games_jp,top_games_global,top_games_other)
-top_selling_games
-```
+
+
 
 
 ```{r}
-top_n_na <- data %>% arrange(desc(NA_Sales))
-top_n_eu <- data %>% arrange(desc(EU_Sales))
-top_n_jp <- data %>% arrange(desc(JP_Sales))  
-top_n_other <- data %>% arrange(desc(Other_Sales)) 
+top_n_na <- games %>% arrange(desc(NA_Sales))
+top_n_eu <- games %>% arrange(desc(EU_Sales))
+top_n_jp <- games %>% arrange(desc(JP_Sales)) 
+top_n_global <- games %>% arrange(desc(Global_Sales)) 
+top_n_other <- games %>% arrange(desc(Other_Sales)) 
 
 top_selling_games <- bind_rows(top_n_na[1,], top_n_eu[1,], top_n_jp[1,], top_n_other[1,])
 top_selling_games
 ```
 
+
+```{r}
+sum(is.null(data))
+
+```
+
+#correlation matrix
+```{r}
+library(corrplot)
+numeric_columns <- games[, c("NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales", "Global_Sales", "Critic_Score", "Critic_Count", "User_Score", "User_Count")]
+correlation_matrix <- cor(numeric_columns)
+corrplot(correlation_matrix, method = "color", type = "upper", order = "hclust", tl.col = "black", tl.srt = 45)
+```
 ```{r}
 
 ```
