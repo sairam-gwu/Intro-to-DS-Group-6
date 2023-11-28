@@ -1,0 +1,65 @@
+---
+title: "R_project2"
+output: html_document
+date: "2023-11-22"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+data=read.csv('~/Documents/GitHub/Intro-to-DS-Group-6/Video games sales.csv')
+str(data)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+total_sales<-colSums(data[,c("NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales", "Global_Sales")])
+print(total_sales)
+```
+
+Total number of sales
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+top_games_na <- data[order(-data$NA_Sales), ][1, ]
+top_games_eu <- data[order(-data$EU_Sales), ][1, ]
+top_games_jp <- data[order(-data$JP_Sales), ][1, ]
+top_games_global <- data[order(-data$Global_Sales), ][1, ]
+top_games_other <- data[order(-data$Other_Sales), ][1, ]
+print(top_games_na)
+print(top_games_eu)
+print(top_games_jp)
+print(top_games_global)
+print(top_games_other)
+```
+
+```{r}
+top_selling_games <- bind_rows(top_games_na ,top_games_eu,top_games_jp,top_games_global,top_games_other)
+top_selling_games
+```
+
+
+```{r}
+top_n_na <- data %>% arrange(desc(NA_Sales))
+top_n_eu <- data %>% arrange(desc(EU_Sales))
+top_n_jp <- data %>% arrange(desc(JP_Sales))  
+top_n_other <- data %>% arrange(desc(Other_Sales)) 
+
+top_selling_games <- bind_rows(top_n_na[1,], top_n_eu[1,], top_n_jp[1,], top_n_other[1,])
+top_selling_games
+```
+
+```{r}
+
+```
