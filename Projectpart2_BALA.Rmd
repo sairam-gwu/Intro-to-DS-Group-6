@@ -173,16 +173,26 @@ filtered_data <- subset(games,Critic_Score > 62)
 filtered_data
 
 
-ordered_platforms <- with(filtered_data, levels(reorder(Platform, -Global_Sales)))
 
 
-ggplot(filtered_data, aes(x = reorder(Platform, -table(Platform)[Platform]), y = Global_Sales, fill = Platform)) +
+
+ggplot(filtered_data, aes(x = reorder(Platform, -table(Platform)[Platform]), y = JP_Sales, fill = Platform)) +
   geom_bar(stat = "identity") +
   labs(title = "Total JP Sales by Platform (Filtered Data)",
        x = "Platform",
        y = "Global Sales") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+ggplot(filtered_data, aes(x = reorder(Genre, -table(Genre)[Genre]), y = JP_Sales, fill = Genre)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total EU Sales by Genre (Filtered Data)",
+       x = "Genre",
+       y = "EU Sales") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
 
 
 ```
@@ -210,6 +220,15 @@ ggplot(filtered_data, aes(x = reorder(Platform, -table(Platform)[Platform]), y =
   labs(title = "Total Global Sales by Platform (Filtered Data)",
        x = "Platform",
        y = "Global Sales") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+ggplot(filtered_data, aes(x = reorder(Genre, -table(Genre)[Genre]), y = Global_Sales, fill = Genre)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total Global_Sales by Genre (Filtered Data)",
+       x = "Genre",
+       y = "EU Sales") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
