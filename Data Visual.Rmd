@@ -833,6 +833,42 @@ model <- lm(Global_Sales ~ Critic_Score + User_Score, data=data)
 # Summary of the model
 summary(model)
 
+# 
+
+```
+
+Both 'Critic Score' and 'User Score' are statistically significant predictors. However, their effects are in opposite directions, with 'Critic Score' having a positive impact and 'User Score' having a negative impact on 'Global Sales'.
+
+```{r}
+
+# Perform linear regression with additional predictors
+model_enhanced <- lm(Global_Sales ~  NA_Sales + EU_Sales + JP_Sales + Other_Sales, 
+                     data=data)
+
+# Summary of the enhanced model
+summary(model_enhanced)
+
+
+
+
+```
+```{r}
+
+# Loop through each genre and perform linear regression
+genres <- unique(data$Genre)
+
+for (genre in genres) {
+  # Subset the data for the specific genre
+  genre_data <- subset(data, Genre == genre)
+  
+  # Perform linear regression
+  model <- lm(Global_Sales ~ Critic_Score + User_Score, data=genre_data)
+  
+  # Output the genre and summary of the model
+  cat("\nLinear Regression Model for Genre:", genre, "\n")
+  print(summary(model))
+}
+
 
 
 ```
