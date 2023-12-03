@@ -826,3 +826,13 @@ auc(roc_curve)
 
 ```
 
+```{r}
+# Perform linear regression
+model <- lm(Global_Sales ~ Critic_Score + User_Score, data=data)
+
+# Summary of the model
+summary(model)
+
+
+
+```

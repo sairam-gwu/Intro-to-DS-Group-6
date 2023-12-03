@@ -2,7 +2,7 @@
 library(ggplot2)
 library(dplyr)
 
-data <- read.csv("/Users/amitsubedi/Documents/GitHub/Intro-to-DS-Group-6/Video games sales.csv")
+data <- read.csv("Video games sales.csv")
 
 data <- select(data, -Critic_Score, -Developer)
 
@@ -30,7 +30,7 @@ library(GGally)
 library(naniar)
 
 
-video_games <- read.csv("/Users/amitsubedi/Documents/GitHub/Intro-to-DS-Group-6/Video games sales.csv")
+video_games <- read.csv("Video games sales.csv")
 
 video_games <- video_games %>% 
                mutate(User_Score = as.numeric(replace(User_Score, User_Score == "tbd", NA)))
