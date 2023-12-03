@@ -921,3 +921,49 @@ rpart.plot(tree_model, type = 4, extra = 102, under = TRUE, faclen = 0)
 
 
 ```
+
+```{r}
+# Load necessary libraries
+library(dplyr)
+library(caret)
+library(rpart)
+library(rpart.plot)
+
+# Define 'hit' games based on a threshold
+hit_threshold <- quantile(data$Global_Sales, 0.75)
+data$Hit <- ifelse(data$Global_Sales > hit_threshold, 1, 0)
+
+# Convert necessary columns to factors
+data$Platform <- as.factor(data$Platform)
+data$Genre <- as.factor(data$Genre)
+data$Year_of_Release <- as.factor(data$Year_of_Release)
+
+# List of unique genres
+genres <- unique(data$Genre)
+
+# Loop through each genre and fit a decision tree model
+for (genre in genres) {
+  cat("\nDecision Tree Model for Genre:", genre, "\n")
+  
+  # Subset the data for the specific genre
+  genre_data <- subset(data, Genre == genre)
+  
+  # Split data into training and testing sets
+  set.seed(123) # for reproducibility
+  index <- createDataPartition(genre_data$Hit, p = 0.8, list = FALSE)
+  train_data <- genre_data[index, ]
+  test_data <- genre_data[-index, ]
+
+  # Fit a decision tree model
+  tree_model <- rpart(Hit ~ Critic_Score + User_Score + Platform + Year_of_Release, 
+                      data = train_data, 
+                      method = "class",
+                      control = rpart.control(minsplit = 20, cp = 0.01))
+
+  # Plot the decision tree
+  rpart.plot(tree_model, type = 4, extra = 102, under = TRUE, faclen = 0)
+}
+
+
+
+```
