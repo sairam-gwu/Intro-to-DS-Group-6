@@ -968,3 +968,52 @@ for (genre in genres) {
 
 
 ```
+
+```{r}
+# Load necessary packages
+library(randomForest)
+library(caret)
+
+
+# Define 'Hit' games based on a threshold (e.g., above the median of 'Global_Sales')
+median_sales <- median(data$Global_Sales, na.rm = TRUE)
+data$Hit <- ifelse(data$Global_Sales > median_sales, 1, 0)
+data$Hit <- as.factor(data$Hit)
+
+# Convert necessary columns to factors
+data$Platform <- as.factor(data$Platform)
+data$Genre <- as.factor(data$Genre)
+data$Year_of_Release <- as.factor(data$Year_of_Release)
+
+# Split the data set into training and testing sets
+set.seed(123) # for reproducibility
+index <- createDataPartition(data$Hit, p = 0.8, list = FALSE)
+train_data <- data[index, ]
+test_data <- data[-index, ]
+
+# Create and train the random forest model for classification
+rf_model <- randomForest(Hit ~ ., data = train_data, ntree = 500)
+
+# Print the model summary
+print(rf_model)
+
+# Evaluate the model on the test data
+predictions <- predict(rf_model, newdata = test_data)
+predictions <- as.factor(predictions)
+conf_matrix <- confusionMatrix(predictions, test_data$Hit)
+print(conf_matrix)
+
+
+
+```
+
+```{r}
+
+# Load necessary library
+library(randomForest)
+
+# Assuming the random forest model is stored in 'rf_model'
+# Extract and plot a single tree - for example, the first tree
+plot(getTree(rf_model, k = 1, labelVar = TRUE))
+
+```
