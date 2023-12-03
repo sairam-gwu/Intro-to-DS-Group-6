@@ -872,3 +872,52 @@ for (genre in genres) {
 
 
 ```
+```{r}
+install.packages("rpart")
+install.packages("rpart.plot")
+
+# Load necessary libraries
+library(dplyr)
+library(caret)
+library(rpart)
+library(rpart.plot)
+
+# Assuming 'data' is your dataset
+# Define 'hit' games based on a threshold (e.g., games with sales above the 75th percentile)
+hit_threshold <- quantile(data$Global_Sales, 0.75)
+data$Hit <- ifelse(data$Global_Sales > hit_threshold, 1, 0)
+
+# Convert factors if necessary
+data$Platform <- as.factor(data$Platform)
+data$Genre <- as.factor(data$Genre)
+data$Year_of_Release <- as.factor(data$Year_of_Release) # Treat as categorical
+
+# Split data into training and testing sets
+set.seed(123) # for reproducibility
+index <- createDataPartition(data$Hit, p = 0.8, list = FALSE)
+train_data <- data[index, ]
+test_data <- data[-index, ]
+
+# Fit a decision tree model
+tree_model <- rpart(Hit ~ Critic_Score + User_Score + Platform + Genre + Year_of_Release, 
+                    data = train_data, method = "class")
+
+# Plot the decision tree
+rpart.plot(tree_model)
+
+
+```
+
+```{r}
+library(rpart)
+library(rpart.plot)
+
+tree_model <- rpart(Hit ~ Critic_Score + User_Score + Platform + Genre, 
+                    data = train_data, 
+                    method = "class",
+                    control = rpart.control(minsplit = 20, cp = 0.01))
+
+rpart.plot(tree_model, type = 4, extra = 102, under = TRUE, faclen = 0)
+
+
+```
