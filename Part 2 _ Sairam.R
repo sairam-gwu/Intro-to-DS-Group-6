@@ -4,6 +4,8 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 
+setwd("C:/Users/saira/OneDrive/Documents/GitHub/Intro-to-DS-Group-6")
+
 games=read.csv("Video games sales.csv")
 head(games,5)
 
@@ -109,3 +111,82 @@ ggplot(platform_difference, aes(x = reorder(Platform, -Difference), y = Differen
        x = "Platform",
        y = "Difference") +
   theme_minimal()
+
+
+#----------------------------------------------------------------------------------------------------------------------
+  
+# Decision tree
+
+
+
+library(rpart)
+library(caret)
+
+# Selecting a subset of columns
+selected_columns <- c("Platform","Year_of_Release","Publisher", "Developer" ,"Rating","Genre")
+
+# Creating a subset of the data with selected columns
+subset_data <- games_final[, selected_columns]
+
+subset_data$Platform <- as.factor(subset_data$Platform)
+subset_data$Publisher <- as.factor(subset_data$Publisher)
+subset_data$Developer <- as.factor(subset_data$Developer)
+subset_data$Rating <- as.factor(subset_data$Rating)
+subset_data$Genre <- as.factor(subset_data$Genre)
+
+# Create a decision tree model
+#model <- rpart(Genre ~ ., data = subset_data, method = "class")
+
+# Make predictions on the training set
+predictions <- predict(model, subset_data, type = "class")
+
+# Create a confusion matrix
+conf_matrix <- confusionMatrix(predictions, subset_data$Genre)
+
+# Print the confusion matrix
+print(conf_matrix)
+
+# Plot the confusion matrix
+conf_matrix_plot <- plot(conf_matrix$table, col = conf_matrix$byClass, 
+                         main = "Confusion Matrix", 
+                         color = c("lightblue", "lightcoral"))
+
+
+
+
+#-----------------------------------------------------------------------------------------------------------------
+
+# Decision Tree 
+
+
+library(caret)
+library(rpart)
+library(rpart.plot)
+
+data=games_final
+hit_threshold <- quantile(data$Global_Sales, 0.75)
+data$Hit <- ifelse(data$Global_Sales > hit_threshold, 1, 0)
+
+# Convert factors if necessary
+data$Platform <- as.factor(data$Platform)
+data$Genre <- as.factor(data$Genre)
+data$Year_of_Release <- as.factor(data$Year_of_Release) # Treat as categorical
+
+# Split data into training and testing sets
+set.seed(123) # for reproducibility
+index <- createDataPartition(data$Hit, p = 0.8, list = FALSE)
+train_data <- data[index, ]
+test_data <- data[-index, ]
+
+# Fit a decision tree model
+tree_model <- rpart(Hit ~ Critic_Score + User_Score + Platform + Genre + Year_of_Release, 
+                    data = train_data, method = "class")
+
+# Plot the decision tree
+rpart.plot(tree_model)
+
+#-----------------------------------------------------------------------------------------------------------------
+
+# Logistic Regression
+
+
