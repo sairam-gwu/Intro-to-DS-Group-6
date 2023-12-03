@@ -768,3 +768,61 @@ print(eu_genre_sales_plot)
 
 
 ```
+
+```{r}
+library(readr)
+library(dplyr)
+data <- read_csv("Data_without NAvalues.csv")
+View(Data_without_NAvalues)
+# Load the necessary library
+
+
+
+# Convert "Global Sales" into a binary variable
+# Defining 'success' as sales greater than the median sales
+median_sales <- median(data$Global_Sales)
+data$Success <- ifelse(data$Global_Sales > median_sales, 1, 0)
+
+# Perform logistic regression
+model <- glm(Success ~User_Score, data=data, family="binomial")
+
+# Summary of the model
+summary(model)
+
+
+
+```
+
+```{r}
+
+# Load necessary libraries
+library(dplyr)
+library(pROC)
+library(caret)
+
+# Convert "Global Sales" into a binary variable
+median_sales <- median(data$Global_Sales)
+data$Success <- ifelse(data$Global_Sales > median_sales, 1, 0)
+
+# Perform logistic regression
+model <- glm(Success ~  NA_Sales+EU_Sales, data=data, family="binomial")
+
+# Make predictions
+predictions <- predict(model, type = "response")
+
+# Convert predictions to binary based on threshold (e.g., 0.5)
+predicted_classes <- ifelse(predictions > 0.5, 1, 0)
+
+# Confusion Matrix
+conf_matrix <- confusionMatrix(as.factor(predicted_classes), as.factor(data$Success))
+print(conf_matrix)
+
+# ROC Curve
+roc_curve <- roc(data$Success, predictions)
+plot(roc_curve, main="ROC Curve")
+auc(roc_curve)
+
+
+
+```
+
