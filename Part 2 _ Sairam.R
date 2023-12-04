@@ -272,13 +272,13 @@ data=games_final
 hit_threshold <- quantile(data$Global_Sales, 0.5)
 data$Hit <- ifelse(data$Global_Sales > hit_threshold, 1, 0)
 
-data$Platform <- as.factor(data$Platform)
-data$Genre <- as.factor(data$Genre)
-data$Developer <- as.factor(data$Genre)
+#data$Platform <- as.factor(data$Platform)
+#data$Genre <- as.factor(data$Genre)
+#data$Developer <- as.factor(data$Genre)
 
 data$Year_of_Release <- as.numeric(data$Year_of_Release)
 
-set.seed(123) 
+set.seed(100) 
 index <- createDataPartition(data$Hit, p = 0.8, list = FALSE)
 train_data <- data[index, ]
 test_data <- data[-index, ]
@@ -306,7 +306,7 @@ data$Publisher <- bin_categories(data$Publisher, top_n = 10)
 
 
 
-set.seed(123) 
+set.seed(100) 
 index <- createDataPartition(data$Hit, p = 0.8, list = FALSE)
 train_data <- data[index, ]
 test_data <- data[-index, ]
