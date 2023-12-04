@@ -965,22 +965,28 @@ for (genre in genres) {
   rpart.plot(tree_model, type = 4, extra = 102, under = TRUE, faclen = 0)
 }
 
-
-
 ```
 
 ```{r}
-# Load necessary packages
+
+# Load necessary libraries
 library(randomForest)
 library(caret)
 
+# Assuming 'data' is your dataset
 
 # Define 'Hit' games based on a threshold (e.g., above the median of 'Global_Sales')
 median_sales <- median(data$Global_Sales, na.rm = TRUE)
 data$Hit <- ifelse(data$Global_Sales > median_sales, 1, 0)
 data$Hit <- as.factor(data$Hit)
 
-# Convert necessary columns to factors
+# Grouping less frequent developers into 'Other'
+threshold <- 25  # Choose a threshold value suitable for your dataset
+developer_counts <- table(data$Developer)
+data$Developer <- ifelse(developer_counts[data$Developer] < threshold, 'Other', data$Developer)
+data$Developer <- as.factor(data$Developer)
+
+# Convert other necessary columns to factors
 data$Platform <- as.factor(data$Platform)
 data$Genre <- as.factor(data$Genre)
 data$Year_of_Release <- as.factor(data$Year_of_Release)
@@ -992,7 +998,8 @@ train_data <- data[index, ]
 test_data <- data[-index, ]
 
 # Create and train the random forest model for classification
-rf_model <- randomForest(Hit ~ ., data = train_data, ntree = 500)
+rf_model <- randomForest(Hit ~ Critic_Score + User_Score + Platform + Genre + Year_of_Release + Developer, 
+                         data = train_data, ntree = 500)
 
 # Print the model summary
 print(rf_model)
@@ -1002,7 +1009,6 @@ predictions <- predict(rf_model, newdata = test_data)
 predictions <- as.factor(predictions)
 conf_matrix <- confusionMatrix(predictions, test_data$Hit)
 print(conf_matrix)
-
 
 
 ```
