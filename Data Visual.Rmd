@@ -351,14 +351,8 @@ ggplotly(p, tooltip = "text")
 ```
 
 
-```{r}
-# T-test example
-t.test(games$NA_Sales, games$EU_Sales)
 
 
-
-
-```
 
 * The Welch Two Sample t-test comparing sales in North America and Europe shows a significant difference in means, with North American sales being higher than European sales on average.
 
@@ -771,65 +765,98 @@ print(eu_genre_sales_plot)
 ```
 
 ```{r}
-library(readr)
+# Load necessary libraries
 library(dplyr)
-data <- read_csv("Data_without NAvalues.csv")
-View(Data_without_NAvalues)
-# Load the necessary library
+library(caret)
+library(ggplot2)
+library(reshape2)
 
+# Assuming 'games_final' is your dataset
+data <- games_final
 
+# Define 'hit' games based on a threshold
+hit_threshold <- quantile(data$Global_Sales, 0.75)
+data$Hit <- ifelse(data$Global_Sales >= hit_threshold, 1, 0)
+data$Hit <- as.factor(data$Hit)
 
-# Convert "Global Sales" into a binary variable
-# Defining 'success' as sales greater than the median sales
-median_sales <- median(data$Global_Sales)
-data$Success <- ifelse(data$Global_Sales > median_sales, 1, 0)
+# Function to bin categories
+bin_categories <- function(column, top_n) {
+  counts <- table(column)
+  top_categories <- names(sort(counts, decreasing = TRUE)[1:top_n])
+  column_binned <- ifelse(column %in% top_categories, column, "Others")
+  return(column_binned)
+}
 
-# Perform logistic regression
-model <- glm(Success ~User_Score, data=data, family="binomial")
+# Bin 'Developer' category
+data$Developer <- bin_categories(data$Developer, top_n = 10)
 
-# Summary of the model
-summary(model)
+# Convert necessary variables to factors
+data$Developer <- as.factor(data$Developer)
+data$Platform <- as.factor(data$Platform)
+data$Genre <- as.factor(data$Genre)
+data$Year_of_Release <- as.numeric(as.character(data$Year_of_Release))
+
+# Split data into training and testing sets
+set.seed(123) # for reproducibility
+index <- createDataPartition(data$Hit, p = 0.8, list = FALSE)
+train_data <- data[index, ]
+test_data <- data[-index, ]
+
+# Fit a logistic regression model
+logit_model <- glm(Hit ~ Critic_Score + Developer  + Genre , 
+                   data = train_data, family = binomial())
+
+# Predict on test data
+predictions <- predict(logit_model, newdata = test_data, type = "response")
+predicted_class <- ifelse(predictions > 0.5, 1, 0)
+predicted_class <- factor(predicted_class, levels = levels(test_data$Hit))
+
+# Create a confusion matrix
+conf_matrix <- confusionMatrix(predicted_class, test_data$Hit)
+
+print(conf_matrix)
+# Load necessary libraries
+library(dplyr)
+library(caret)
+library(pROC)
+
+# [Previous code for data preparation, logistic regression model training, and predictions]
+
+# Calculate the ROC curve
+roc_obj <- roc(test_data$Hit, as.numeric(predictions))
+
+# Plot the ROC curve
+plot(roc_obj, main = "ROC Curve for Logistic Regression Model")
+
+# Print AUC (Area Under the Curve)
+auc(roc_obj)
 
 
 
 ```
 
 ```{r}
+# Assuming you have 'predictions' and 'test_data$Hit' from your logistic regression model
+predicted_class <- ifelse(predictions > 0.5, "1", "0")
+predicted_class <- factor(predicted_class, levels = c("0", "1"))
 
-# Load necessary libraries
-library(dplyr)
-library(pROC)
-library(caret)
+# Actual values
+actual_class <- test_data$Hit
 
-# Convert "Global Sales" into a binary variable
-median_sales <- median(data$Global_Sales)
-data$Success <- ifelse(data$Global_Sales > median_sales, 1, 0)
+# Create a table for Actual vs Predicted
+confusion_matrix <- table(Predicted = predicted_class, Actual = actual_class)
 
-# Perform logistic regression
-model <- glm(Success ~  NA_Sales+EU_Sales, data=data, family="binomial")
-
-# Make predictions
-predictions <- predict(model, type = "response")
-
-# Convert predictions to binary based on threshold (e.g., 0.5)
-predicted_classes <- ifelse(predictions > 0.5, 1, 0)
-
-# Confusion Matrix
-conf_matrix <- confusionMatrix(as.factor(predicted_classes), as.factor(data$Success))
-print(conf_matrix)
-
-# ROC Curve
-roc_curve <- roc(data$Success, predictions)
-plot(roc_curve, main="ROC Curve")
-auc(roc_curve)
-
-
+# Print the confusion matrix
+print(confusion_matrix)
 
 ```
+
+
+
 
 ```{r}
 # Perform linear regression
-model <- lm(Global_Sales ~ Critic_Score + User_Score, data=data)
+model <- lm(Global_Sales ~ Critic_Score + User_Score, data=games_final)
 
 # Summary of the model
 summary(model)
@@ -853,6 +880,8 @@ summary(model_enhanced)
 
 
 ```
+
+
 ```{r}
 
 # Loop through each genre and perform linear regression
@@ -873,9 +902,9 @@ for (genre in genres) {
 
 
 ```
+
 ```{r}
-install.packages("rpart")
-install.packages("rpart.plot")
+
 
 # Load necessary libraries
 library(dplyr)
@@ -883,15 +912,34 @@ library(caret)
 library(rpart)
 library(rpart.plot)
 
-# Assuming 'data' is your dataset
-# Define 'hit' games based on a threshold (e.g., games with sales above the 75th percentile)
-hit_threshold <- quantile(data$Global_Sales, 0.75)
+# Assuming games_final is your dataset
+data <- games_final
+
+# Define 'hit' games based on a threshold
+hit_threshold <- quantile(data$Global_Sales,0.75)
 data$Hit <- ifelse(data$Global_Sales > hit_threshold, 1, 0)
 
+# Function to bin categories
+bin_categories <- function(column, top_n) {
+  counts <- table(column)
+  top_categories <- names(sort(counts, decreasing = TRUE)[1:top_n])
+  column_binned <- ifelse(column %in% top_categories, column, "Others")
+  return(column_binned)
+}
+
+# Bin 'Developer', 'Publisher', and 'Platform' categories
+data$Developer <- bin_categories(data$Developer, top_n = 10)
+data$Publisher <- bin_categories(data$Publisher, top_n = 10)
+data$Platform <- bin_categories(data$Platform, top_n = 10)
+
 # Convert factors if necessary
+data$Developer <- as.factor(data$Developer)
+data$Publisher <- as.factor(data$Publisher)
 data$Platform <- as.factor(data$Platform)
 data$Genre <- as.factor(data$Genre)
-data$Year_of_Release <- as.factor(data$Year_of_Release) # Treat as categorical
+
+# Convert 'Year_of_Release' to numeric
+data$Year_of_Release <- as.numeric(data$Year_of_Release)
 
 # Split data into training and testing sets
 set.seed(123) # for reproducibility
@@ -900,12 +948,141 @@ train_data <- data[index, ]
 test_data <- data[-index, ]
 
 # Fit a decision tree model
-tree_model <- rpart(Hit ~ Critic_Score + User_Score + Platform + Genre + Year_of_Release, 
+tree_model <- rpart(Hit ~ Critic_Score + User_Score + Developer + Publisher + Platform + Genre + Year_of_Release, 
                     data = train_data, method = "class")
 
-# Plot the decision tree
-rpart.plot(tree_model)
+# Create a larger plot
+png("decision_tree_plot.png", width = 1024, height = 768)
+rpart.plot(tree_model, extra = 101, under = TRUE, cex = 0.8, tweak = 1.2)
+dev.off()
 
+
+```
+```{r}
+# Load necessary libraries
+library(dplyr)
+library(caret)
+library(rpart)
+library(rpart.plot)
+
+# Assuming 'games_final' is your dataset
+data <- games_final
+
+# Define 'hit' games based on a threshold
+hit_threshold <- quantile(data$Global_Sales, 0.75)
+data$Hit <- ifelse(data$Global_Sales > hit_threshold, 1, 0)
+
+# Function to bin categories
+bin_categories <- function(column, top_n) {
+  counts <- table(column)
+  top_categories <- names(sort(counts, decreasing = TRUE)[1:top_n])
+  column_binned <- ifelse(column %in% top_categories, column, "Others")
+  return(column_binned)
+}
+
+# Bin 'Developer', 'Publisher', and 'Platform' categories
+data$Developer <- bin_categories(data$Developer, top_n = 10)
+data$Publisher <- bin_categories(data$Publisher, top_n = 10)
+data$Platform <- bin_categories(data$Platform, top_n = 10)
+
+# Convert variables to factors
+data$Developer <- as.factor(data$Developer)
+data$Publisher <- as.factor(data$Publisher)
+data$Platform <- as.factor(data$Platform)
+data$Genre <- as.factor(data$Genre)
+data$Year_of_Release <- as.numeric(data$Year_of_Release)
+data$Hit <- as.factor(data$Hit)
+
+# Split data into training and testing sets
+set.seed(123) # for reproducibility
+index <- createDataPartition(data$Hit, p = 0.8, list = FALSE)
+train_data <- data[index, ]
+test_data <- data[-index, ]
+
+# Fit a decision tree model
+tree_model <- rpart(Hit ~ Critic_Score + User_Score + Developer + Publisher + Platform + Genre + Year_of_Release, 
+                    data = train_data, method = "class")
+
+# Predict on test data
+predictions <- predict(tree_model, newdata = test_data, type = "class")
+
+# Convert predictions to factor with levels matching the 'Hit' column
+predictions <- as.factor(predictions)
+levels(predictions) <- levels(test_data$Hit)
+
+# Create a confusion matrix
+conf_matrix <- confusionMatrix(predictions, test_data$Hit)
+print(conf_matrix)
+
+# Plot the decision tree
+png("decision_tree_plot.png", width = 1024, height = 768)
+rpart.plot(tree_model, extra = 101, under = TRUE, cex = 0.8, tweak = 1.2)
+dev.off()
+
+
+```
+
+
+```{r}
+# Ensure necessary libraries are loaded
+library(caret)
+library(ggplot2)
+library(reshape2)  # for melting the confusion matrix into a format suitable for ggplot
+
+# Assuming you already have predictions and test_data$Hit from your previous code
+predictions <- predict(tree_model, newdata = test_data, type = "class")
+predictions <- factor(predictions, levels = levels(test_data$Hit))
+
+# Create a confusion matrix
+conf_matrix <- confusionMatrix(predictions, test_data$Hit)
+
+# Convert the confusion matrix to a table for plotting
+conf_matrix_table <- as.table(conf_matrix$table)
+
+# Melt the table for use with ggplot
+conf_matrix_melted <- melt(conf_matrix_table)
+
+# Rename the variables for clarity
+names(conf_matrix_melted) <- c("Prediction", "Actual", "Frequency")
+
+# Plotting the confusion matrix
+ggplot(data = conf_matrix_melted, aes(x = Actual, y = Prediction, fill = Frequency)) +
+  geom_tile() +
+  geom_text(aes(label = sprintf("%1.0f", Frequency)), vjust = 1) +
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  theme_minimal() +
+  labs(x = 'Actual', y = 'Predicted', title = 'Confusion Matrix') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
+```{r}
+
+# Load necessary library
+library(ggplot2)
+
+# Assuming games_final is your dataset
+data <- games_final
+
+# Convert 'Year_of_Release' to a proper format if it's not already
+data$Year_of_Release <- as.numeric(as.character(data$Year_of_Release))
+
+# Filter data for years from 1995 onwards
+data_filtered <- data[data$Year_of_Release >= 1995, ]
+
+# Calculate average global sales per year for the filtered data
+avg_sales_by_year_filtered <- aggregate(Global_Sales ~ Year_of_Release, data_filtered, mean)
+
+# Plotting histogram
+ggplot(avg_sales_by_year_filtered, aes(x = Year_of_Release, y = Global_Sales)) +
+  geom_histogram(stat = "identity", fill = "blue", color = "black") +
+  labs(title = "Histogram of Average Global Sales (From 1995)", 
+       x = "Year of Release", 
+       y = "Average Global Sales") +
+  theme_minimal() +
+  xlim(1995, max(avg_sales_by_year_filtered$Year_of_Release))
+  
 
 ```
 
@@ -939,12 +1116,6 @@ data$Platform <- as.factor(data$Platform)
 data$Genre <- as.factor(data$Genre)
 data$Year_of_Release <- as.factor(data$Year_of_Release)
 
-# List of unique genres
-genres <- unique(data$Genre)
-
-# Loop through each genre and fit a decision tree model
-for (genre in genres) {
-  cat("\nDecision Tree Model for Genre:", genre, "\n")
   
   # Subset the data for the specific genre
   genre_data <- subset(data, Genre == genre)
@@ -963,7 +1134,7 @@ for (genre in genres) {
 
   # Plot the decision tree
   rpart.plot(tree_model, type = 4, extra = 102, under = TRUE, faclen = 0)
-}
+
 
 ```
 
@@ -974,7 +1145,7 @@ library(randomForest)
 library(caret)
 
 # Assuming 'data' is your dataset
-
+data=games_final
 # Define 'Hit' games based on a threshold (e.g., above the median of 'Global_Sales')
 median_sales <- median(data$Global_Sales, na.rm = TRUE)
 data$Hit <- ifelse(data$Global_Sales > median_sales, 1, 0)
@@ -998,7 +1169,7 @@ train_data <- data[index, ]
 test_data <- data[-index, ]
 
 # Create and train the random forest model for classification
-rf_model <- randomForest(Hit ~ Critic_Score + User_Score + Platform + Genre + Year_of_Release + Developer, 
+rf_model <- randomForest(Hit ~ EU_Sales+Critic_Score + Platform + Genre + Year_of_Release + Developer, 
                          data = train_data, ntree = 500)
 
 # Print the model summary
@@ -1023,3 +1194,87 @@ library(randomForest)
 plot(getTree(rf_model, k = 1, labelVar = TRUE))
 
 ```
+
+
+```{r}
+games<-na.omit(games)
+unique(games$Rating)
+games$Rating <- ifelse( games$Rating== "", NA,games$Rating )
+unique(games$Rating)
+games<-subset(games,games$Rating!="NA")
+games<-subset(games,games$Year_of_Release!="N/A")
+nrow(games)
+
+
+games_final= outlierKD2(games,Global_Sales,rm=TRUE,hist=FALSE)
+games_final<-na.omit(games_final)
+
+
+```
+
+
+```{r}
+
+# Load necessary libraries
+library(ggplot2)
+library(reshape2)
+
+# Read the data
+data <- games_final
+
+# Selecting only numerical columns for correlation
+numerical_data <- data[, sapply(data, is.numeric)]
+
+# Compute the correlation matrix
+cor_matrix <- cor(numerical_data, use = "complete.obs")
+
+# Melt the correlation matrix into a long format
+melted_cor_matrix <- melt(cor_matrix)
+
+# Plotting
+ggplot(data = melted_cor_matrix, aes(x = Var1, y = Var2, fill = value)) +
+    geom_tile() +
+    geom_text(aes(label = sprintf("%.2f", value)), color = "black", size = 3, fontface = "bold") +
+    scale_fill_gradient2(low = "green", mid = "yellow", high = "red", 
+                         midpoint = 0, limit = c(-1,1), space = "Lab", 
+                         name="Pearson\nCorrelation") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    labs(x = '', y = '', title = 'Correlation Matrix')
+
+
+```
+
+```{r}
+hit_threshold <- quantile(data$Global_Sales, 0.75)
+data$Hit <- ifelse(data$Global_Sales > hit_threshold, 1, 0)
+
+bin_categories <- function(column, top_n) {
+  counts <- table(column)
+  top_categories <- names(sort(counts, decreasing = TRUE)[1:top_n])
+  column_binned <- ifelse(column %in% top_categories, column, "Others")
+  return(column_binned)
+}
+
+data$Developer <- bin_categories(data$Developer, top_n = 10)
+
+data$Publisher <- bin_categories(data$Publisher, top_n = 10)
+
+data$Platform <- bin_categories(data$Platform, top_n = 10)
+
+
+
+set.seed(123) 
+index <- createDataPartition(data$Hit, p = 0.8, list = FALSE)
+train_data <- data[index, ]
+test_data <- data[-index, ]
+
+
+tree_model <- rpart(Hit ~ Critic_Score + User_Score + Developer + Genre+Platform, 
+                    data = train_data, method = "class")
+
+
+rpart.plot(tree_model, extra = 101, under = TRUE, cex = 0.8, tweak = 1.2)
+
+
+
