@@ -293,6 +293,9 @@ rpart.plot(tree_model, extra = 101, under = TRUE, cex = 0.8, tweak = 1.2)
 # Decision Tree - Iteration 2 Dropping platform and years
 
 
+hit_threshold <- quantile(data$Global_Sales, 0.75)
+data$Hit <- ifelse(data$Global_Sales > hit_threshold, 1, 0)
+
 bin_categories <- function(column, top_n) {
   counts <- table(column)
   top_categories <- names(sort(counts, decreasing = TRUE)[1:top_n])
@@ -304,19 +307,45 @@ data$Developer <- bin_categories(data$Developer, top_n = 10)
 
 data$Publisher <- bin_categories(data$Publisher, top_n = 10)
 
+data$Platform <- bin_categories(data$Platform, top_n = 10)
 
 
-set.seed(100) 
+
+set.seed(123) 
 index <- createDataPartition(data$Hit, p = 0.8, list = FALSE)
 train_data <- data[index, ]
 test_data <- data[-index, ]
 
 
-tree_model <- rpart(Hit ~ Critic_Score + User_Score + Developer + Genre, 
+tree_model <- rpart(Hit ~ Critic_Score + User_Score + Developer + Genre+Platform, 
                     data = train_data, method = "class")
 
 
 rpart.plot(tree_model, extra = 101, under = TRUE, cex = 0.8, tweak = 1.2)
+
+
+
+predictions <- predict(tree_model, newdata = test_data, type = "class")
+
+# Create confusion matrix
+conf_matrix <- confusionMatrix(predictions, test_data$Hit)
+
+# Plot confusion matrix
+plot_confusion_matrix <- function(cm) {
+  layout(matrix(c(1, 1, 2)))
+  par(mar = c(2, 2, 2, 2))
+  plot(c(0, 1), c(0, 1), type = 'n', xlab = 'Predicted', ylab = 'Actual', axes = FALSE)
+  axis(1, at = 0:1, labels = colnames(cm), tick = FALSE)
+  axis(2, at = 0:1, labels = rownames(cm), tick = FALSE, las = 2)
+  text(expand.grid(1:ncol(cm), 1:nrow(cm)), labels = cm, pos = c(2, 1), offset = 0.5)
+}
+
+plot_confusion_matrix(conf_matrix$table)
+
+
+
+
+
 
 
 
@@ -326,6 +355,8 @@ rpart.plot(tree_model, extra = 101, under = TRUE, cex = 0.8, tweak = 1.2)
 #-----------------------------------------------------------------------------------------------------------------
 
 # Logistic Regression
+
+
 
 data$Developer <- as.factor(data$Developer) 
 data$Publisher <- as.factor(data$Publisher) 
