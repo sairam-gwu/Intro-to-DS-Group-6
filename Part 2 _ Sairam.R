@@ -233,14 +233,22 @@ library(caret)
 library(rpart.plot)
 
 
-# Create a decision tree model
-model <- rpart(Genre ~ ., data = model_data, method = "class")
+data$Developer <- bin_categories(data$Developer, top_n = 10)
+
+data$Publisher <- bin_categories(data$Publisher, top_n = 10)
+
+data$Platform <- bin_categories(data$Platform, top_n = 10)
+
+
+
+
+model <- rpart(Genre ~ Developer+Publisher+Year_of_Release+Critic_Score+User_Score, data = data, method = "class")
 
 # Make predictions on the training set
-predictions <- predict(model, model_data, type = "class")
+predictions <- predict(model, data, type = "class")
 
 # Create a confusion matrix
-conf_matrix <- confusionMatrix(predictions, model_data$Genre)
+conf_matrix <- confusionMatrix(predictions, data$Genre)
 
 # Print the confusion matrix
 print(conf_matrix)
@@ -252,45 +260,18 @@ conf_matrix_plot <- plot(conf_matrix$table, col = conf_matrix$byClass,
 
 
 
-# Plot the decision tree
-rpart.plot(model)
+rpart.plot(model, extra = 101, under = TRUE, cex = 0.8, tweak = 1.2)
 
 
 
-
-
-#---------------------------------------------------------------------------------------------------------------
-
-# Decision Tree - Iteration 1 looking at platforms as well as years
+#-----------------------------------------------------------------------------------------------------------------
+# Decision Tree - Iteration 2 Dropping platform and years
 
 
 library(caret)
 library(rpart)
 library(rpart.plot)
 
-data=games_final
-hit_threshold <- quantile(data$Global_Sales, 0.5)
-data$Hit <- ifelse(data$Global_Sales > hit_threshold, 1, 0)
-
-#data$Platform <- as.factor(data$Platform)
-#data$Genre <- as.factor(data$Genre)
-#data$Developer <- as.factor(data$Genre)
-
-data$Year_of_Release <- as.numeric(data$Year_of_Release)
-
-set.seed(100) 
-index <- createDataPartition(data$Hit, p = 0.8, list = FALSE)
-train_data <- data[index, ]
-test_data <- data[-index, ]
-
-tree_model <- rpart(Hit ~ Critic_Score + User_Score + Platform + Genre + Year_of_Release, 
-                    data = train_data, method = "class")
-
-
-rpart.plot(tree_model, extra = 101, under = TRUE, cex = 0.8, tweak = 1.2)
-
-#-----------------------------------------------------------------------------------------------------------------
-# Decision Tree - Iteration 2 Dropping platform and years
 
 
 hit_threshold <- quantile(data$Global_Sales, 0.75)

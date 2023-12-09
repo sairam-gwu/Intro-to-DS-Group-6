@@ -1,0 +1,98 @@
+---
+title: "Video Game Sales and Performance Analysis - Group 6"
+author's: "1. Sairam Venkatachalam 2. Amit Subedi 3. Sriram Sathwik Tippavaram 4.	Bala Krishna Reddy Ragannagari "
+date: "`r Sys.Date()`"
+output:  
+    rmdformats::readthedown:
+      toc_float: true
+      toc_depth: 3
+      number_sections: true
+      code_folding: hide
+      
+      
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r init, include=F}
+# The package "ezids" (EZ Intro to Data Science) includes some helper functions we developed for the course. 
+# Some of the frequently used functions are loadPkg(), xkabledply(), xkablesummary(), uzscale(), etc.
+# You will need to install it (once) from GitHub.
+# library(devtools)
+# devtools::install_github("physicsland/ezids")
+# Then load the package in your R session.
+library(ezids)
+library(ggplot2)
+library(dplyr)
+```
+
+
+
+# Introduction
+
+The video game industry is a multi-billion dollar industry that is still expanding in terms of both influence and popularity. People of all ages and backgrounds love playing video games, and they have a significant impact on our culture and society.Using information that has been scraped from Metacritic, this study will look at video game performance and sales. Metacritic is an online platform that compiles reviews from multiple sources for video games, films, TV series, and music. We can spot trends and obtain insightful knowledge about the video game industry by examining Metacritic data. 
+
+
+## Objective
+
+This research project's goal is to analyze video game sales and performance data that was taken from Metacritic using exploratory data analysis (EDA) and hypothesis testing in order to identify patterns and trends in video game sales and performance. We aim to test hypotheses about the relationships between various variables, including release date, publisher, genre, metacritic scores, and platform. We also hope to learn about the elements that affect the success of video games and the video game business. 
+
+## Data Source
+
+The dataset used for this report was sourced through web scraping from Metacritic. It is important to note that certain observations are missing, as Metacritic covers only a subset of the gaming platforms. As a result, some games may not have complete information for all the variables. However, the dataset contains approximately 6,900 complete cases.
+
+The dataset has information on the following attributes:
+
+**Game Specific: **
+
+Name: The name of the video game 
+
+Genre: The genre of the video game 
+
+Platform: The platform(s) on which the video game was released 
+
+Developer: The developer of the video game 
+
+Publisher: The publisher of the video game 
+
+Year of Release: The year in which the video game was released 
+
+**Scores: **
+
+Metacritic User Score: The score given to the game by users. 
+
+Metacritic Critic Score: The score given to the game by critics. 
+
+**Sales: ** 
+
+North America: The number of units sold in North America 
+
+Europe: The number of units sold in Europe 
+
+Japan: The number of units sold in Japan 
+
+Global: The total number of units sold worldwide 
+
+
+# Exploratory Data Analysis
+
+
+
+
+# Research Questions
+
+## References
+
+-Chen, H., & Hu, Y. (2020). The impact of marketing campaigns on video game sales: A meta-analysis. Journal of Marketing, 84(4), 124-143. https://www.sciencedirect.com/science/article/pii/S0148296320304161
+
+-Lin, Y., & Wu, C. (2021). The impact of player demographics on video game sales: A segmentation analysis. Computers in Human Behavior, 118, 106653. https://www.researchgate.net/publication/31977403_Segmentation_of_the_games_market_using_multivariate_analysis
+
+-Duan, W., & Zhang, J. (2019). The impact of critic reviews on video game sales: Evidence from a large-scale panel dataset. Journal of Business Research, 104, 70-80. https://pubsonline.informs.org/doi/abs/10.1287/mnsc.2023.4754
+
+-Bonferroni Correction - https://en.wikipedia.org/wiki/Bonferroni_correction
+
+-[OIS] Diez et al. (2015), OpenIntro Statistics.
+https://leanpub.com/os 
