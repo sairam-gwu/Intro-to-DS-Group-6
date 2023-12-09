@@ -171,6 +171,48 @@ test_data <- data[-index, ]
 logit_model <- glm(Hit ~ Critic_Score + Developer  + Genre , 
                    data = train_data, family = binomial())
 print(summary(logit_model))
+
+# Predict on test data
+predictions <- predict(logit_model, newdata = test_data, type = "response")
+predicted_class <- ifelse(predictions > 0.5, 1, 0)
+predicted_class <- factor(predicted_class, levels = levels(test_data$Hit))
+
+# Create a confusion matrix
+conf_matrix <- confusionMatrix(predicted_class, test_data$Hit)
+
+print(conf_matrix)
+# Load necessary libraries
+library(dplyr)
+library(caret)
+library(pROC)
+
+# [Previous code for data preparation, logistic regression model training, and predictions]
+
+# Calculate the ROC curve
+roc_obj <- roc(test_data$Hit, as.numeric(predictions))
+
+# Plot the ROC curve
+plot(roc_obj, main = "ROC Curve for Logistic Regression Model")
+
+# Print AUC (Area Under the Curve)
+auc(roc_obj)
+
+
+
+# Assuming you have 'predictions' and 'test_data$Hit' from your logistic regression model
+predicted_class <- ifelse(predictions > 0.5, "1", "0")
+predicted_class <- factor(predicted_class, levels = c("0", "1"))
+
+# Actual values
+actual_class <- test_data$Hit
+
+# Create a table for Actual vs Predicted
+confusion_matrix <- table(Predicted = predicted_class, Actual = actual_class)
+
+# Print the confusion matrix
+print(confusion_matrix)
+
+
 ```
 
 We are using logistic regression model to predict if a games is hit or not based on the threshold value.
@@ -209,5 +251,16 @@ Puzzle games are also less likely to be hits. The negative coefficient and its l
 
 * Null deviance shows the goodness of fit of a model with no predictors (only the intercept) and residual deviance shows the goodness of fit of your model. A lower residual deviance compared to the null deviance indicates that the model is a better fit than the null model.
 
+**Accuracy(0.7606):**
+* The above model has an accuracy of 76.06%, which means it correctly predicts whether a game is a hit or not 76.06% of the time.
 
+**Confusion Matrix:**
+
+* True Negatives (TN): 897 - The model correctly predicted the non-hit games.
+* False Positives (FP): 273 - The model incorrectly predicted these games as hits.
+* False Negatives (FN): 21 - The model incorrectly predicted these hits as non-hits.
+* True Positives (TP): 37 - The model correctly predicted the hit games.
+
+**Summary:**
+Based on the provided information, the logistic regression model exhibits an overall accuracy of 76.06%, which is higher than the no information rate, suggesting it has learned to predict better than a naive model. However, the model has a high sensitivity (97.71%) and low specificity (11.94%), indicating it is adept at predicting games that will not be hits (flops) but performs poorly in identifying successful hit games. The Area Under the Curve (AUC) of 0.7107 from the ROC analysis reveals a good discriminatory ability, but the model's prediction bias towards non-hits is also evident, as shown by the high number of false negatives. This suggests that while the model is quite conservative and effective in identifying non-hit games, it needs improvement to balance its predictive performance for both hits and non-hits
 
