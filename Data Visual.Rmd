@@ -805,6 +805,11 @@ test_data <- data[-index, ]
 # Fit a logistic regression model
 logit_model <- glm(Hit ~ Critic_Score + Developer  + Genre , 
                    data = train_data, family = binomial())
+print(summary(logit_model))
+```
+
+
+```{r}
 
 # Predict on test data
 predictions <- predict(logit_model, newdata = test_data, type = "response")
@@ -830,7 +835,6 @@ plot(roc_obj, main = "ROC Curve for Logistic Regression Model")
 
 # Print AUC (Area Under the Curve)
 auc(roc_obj)
-
 
 
 ```
@@ -948,7 +952,7 @@ train_data <- data[index, ]
 test_data <- data[-index, ]
 
 # Fit a decision tree model
-tree_model <- rpart(Hit ~ Critic_Score + User_Score + Developer + Publisher + Platform + Genre + Year_of_Release, 
+tree_model <- rpart(Hit ~ Critic_Score + User_Score + Developer  + Platform + Genre + Year_of_Release, 
                     data = train_data, method = "class")
 
 # Create a larger plot
@@ -958,6 +962,7 @@ dev.off()
 
 
 ```
+
 ```{r}
 # Load necessary libraries
 library(dplyr)
@@ -965,56 +970,26 @@ library(caret)
 library(rpart)
 library(rpart.plot)
 
-# Assuming 'games_final' is your dataset
-data <- games_final
-
-# Define 'hit' games based on a threshold
-hit_threshold <- quantile(data$Global_Sales, 0.75)
-data$Hit <- ifelse(data$Global_Sales > hit_threshold, 1, 0)
-
-# Function to bin categories
-bin_categories <- function(column, top_n) {
-  counts <- table(column)
-  top_categories <- names(sort(counts, decreasing = TRUE)[1:top_n])
-  column_binned <- ifelse(column %in% top_categories, column, "Others")
-  return(column_binned)
-}
-
-# Bin 'Developer', 'Publisher', and 'Platform' categories
-data$Developer <- bin_categories(data$Developer, top_n = 10)
-data$Publisher <- bin_categories(data$Publisher, top_n = 10)
-data$Platform <- bin_categories(data$Platform, top_n = 10)
-
-# Convert variables to factors
-data$Developer <- as.factor(data$Developer)
-data$Publisher <- as.factor(data$Publisher)
-data$Platform <- as.factor(data$Platform)
-data$Genre <- as.factor(data$Genre)
-data$Year_of_Release <- as.numeric(data$Year_of_Release)
-data$Hit <- as.factor(data$Hit)
-
-# Split data into training and testing sets
-set.seed(123) # for reproducibility
-index <- createDataPartition(data$Hit, p = 0.8, list = FALSE)
-train_data <- data[index, ]
-test_data <- data[-index, ]
-
-# Fit a decision tree model
-tree_model <- rpart(Hit ~ Critic_Score + User_Score + Developer + Publisher + Platform + Genre + Year_of_Release, 
-                    data = train_data, method = "class")
+# [Your existing code for data preparation and model training goes here]
 
 # Predict on test data
-predictions <- predict(tree_model, newdata = test_data, type = "class")
+test_predictions_prob <- predict(tree_model, newdata = test_data, type = "prob")
+# Converting probabilities to class labels based on threshold 0.5
+test_predictions <- ifelse(test_predictions_prob[, "1"] > 0.5, 1, 0)
+test_predictions <- as.factor(test_predictions)
 
-# Convert predictions to factor with levels matching the 'Hit' column
-predictions <- as.factor(predictions)
-levels(predictions) <- levels(test_data$Hit)
+# Actual values
+test_actuals <- test_data$Hit
 
 # Create a confusion matrix
-conf_matrix <- confusionMatrix(predictions, test_data$Hit)
+conf_matrix <- table(Predicted = test_predictions, Actual = test_actuals)
 print(conf_matrix)
 
-# Plot the decision tree
+# Calculate accuracy
+accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
+print(paste("Accuracy:", accuracy))
+
+# Save the plot of the decision tree
 png("decision_tree_plot.png", width = 1024, height = 768)
 rpart.plot(tree_model, extra = 101, under = TRUE, cex = 0.8, tweak = 1.2)
 dev.off()
@@ -1024,35 +999,7 @@ dev.off()
 
 
 ```{r}
-# Ensure necessary libraries are loaded
-library(caret)
-library(ggplot2)
-library(reshape2)  # for melting the confusion matrix into a format suitable for ggplot
 
-# Assuming you already have predictions and test_data$Hit from your previous code
-predictions <- predict(tree_model, newdata = test_data, type = "class")
-predictions <- factor(predictions, levels = levels(test_data$Hit))
-
-# Create a confusion matrix
-conf_matrix <- confusionMatrix(predictions, test_data$Hit)
-
-# Convert the confusion matrix to a table for plotting
-conf_matrix_table <- as.table(conf_matrix$table)
-
-# Melt the table for use with ggplot
-conf_matrix_melted <- melt(conf_matrix_table)
-
-# Rename the variables for clarity
-names(conf_matrix_melted) <- c("Prediction", "Actual", "Frequency")
-
-# Plotting the confusion matrix
-ggplot(data = conf_matrix_melted, aes(x = Actual, y = Prediction, fill = Frequency)) +
-  geom_tile() +
-  geom_text(aes(label = sprintf("%1.0f", Frequency)), vjust = 1) +
-  scale_fill_gradient(low = "white", high = "steelblue") +
-  theme_minimal() +
-  labs(x = 'Actual', y = 'Predicted', title = 'Confusion Matrix') +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
 
