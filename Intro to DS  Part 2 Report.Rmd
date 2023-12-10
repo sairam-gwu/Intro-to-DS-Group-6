@@ -326,6 +326,250 @@ The second approach involves adding a columns called 'Hit' which classifies the 
 
 ### Decision Trees
 
+
+```{r}
+library(dplyr)
+library(ggplot2)
+games<-read.csv('Video games sales.csv')
+str(games)
+
+```
+
+```{r}
+
+games$Platform<-as.factor(games$Platform)
+games$Year_of_Release<-as.factor(games$Year_of_Release)
+games$Genre<-as.factor(games$Genre)
+games$Publisher<-as.factor(games$Publisher)
+games$Developer<-as.factor(games$Developer)
+games$Rating<-as.factor(games$Rating)
+str(games)
+```
+
+
+```{r}
+games<-na.omit(games)
+unique(games$Rating)
+games$Rating <- ifelse( games$Rating== "", NA,games$Rating )
+unique(games$Rating)
+games<-subset(games,games$Rating!="NA")
+games<-subset(games,games$Year_of_Release!="N/A")
+nrow(games)
+
+library(ezids)
+games_final= outlierKD2(games,Global_Sales,rm=TRUE,hist=FALSE)
+games_final<-na.omit(games_final)
+
+
+
+
+```
+
+
+```{r}
+
+games %>%
+  group_by(Genre) %>%
+  summarize(Total_Global_Sales = sum(Global_Sales)) %>%
+  ggplot(aes(x = reorder(Genre, Total_Global_Sales), y = Total_Global_Sales)) +
+  geom_bar(stat = "identity", fill = "green") +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("Global Sales by Game Genre")
+
+```
+
+The above graph represents the total global sales of video games, grouped by their genre.
+
+* Action games are the most popular, with total sales far exceeding the other genres with sales more than 1000.
+* Followed by Action genre sports are the second most popular genre , with sales around 750.
+* The least sold games we puzzles and strategy as we know most of these types of games are played by less amount of people
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(ggrepel)
+
+
+games$Year_of_Release <- as.numeric(as.character(games$Year_of_Release))
+
+na_sales <- games %>%
+  group_by(Year_of_Release, Genre) %>%
+  summarise(NA_Sales = sum(NA_Sales, na.rm = TRUE)) %>%
+  ungroup()
+
+
+na_best_selling_genres <- na_sales %>%
+  arrange(desc(NA_Sales)) %>%
+  group_by(Year_of_Release) %>%
+  slice(1) %>%
+  ungroup()
+
+# Create a bar plot for NA region only with each genre a different color
+na_genre_sales_plot <- ggplot(na_best_selling_genres, aes(x = Year_of_Release, y = NA_Sales, fill = Genre)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set3") +  
+  labs(title = "NA Annual Sales with Best-Selling Genre Highlighted", x = "Year of Release", y = "Sales") +
+  theme(legend.title = element_blank()) 
+
+print(na_genre_sales_plot)
+
+ 
+
+
+```
+
+The graph displays the annual sales of the best-selling video game genres in North America, with each bar representing a specific year.
+
+*  A period dominated by action games might be followed by a surge in the popularity of sports games.
+
+
+```{r}
+# Load necessary libraries
+library(dplyr)
+library(caret)
+library(ggplot2)
+library(reshape2)
+
+# Assuming 'games_final' is your dataset
+data <- games_final
+
+# Define 'hit' games based on a threshold
+hit_threshold <- quantile(data$Global_Sales, 0.75)
+data$Hit <- ifelse(data$Global_Sales >= hit_threshold, 1, 0)
+data$Hit <- as.factor(data$Hit)
+
+# Function to bin categories
+bin_categories <- function(column, top_n) {
+  counts <- table(column)
+  top_categories <- names(sort(counts, decreasing = TRUE)[1:top_n])
+  column_binned <- ifelse(column %in% top_categories, column, "Others")
+  return(column_binned)
+}
+
+# Bin 'Developer' category
+data$Developer <- bin_categories(data$Developer, top_n = 10)
+
+# Convert necessary variables to factors
+data$Developer <- as.factor(data$Developer)
+data$Platform <- as.factor(data$Platform)
+data$Genre <- as.factor(data$Genre)
+data$Year_of_Release <- as.numeric(as.character(data$Year_of_Release))
+
+# Split data into training and testing sets
+set.seed(123) # for reproducibility
+index <- createDataPartition(data$Hit, p = 0.8, list = FALSE)
+train_data <- data[index, ]
+test_data <- data[-index, ]
+
+# Fit a logistic regression model
+logit_model <- glm(Hit ~ Critic_Score + Developer  + Genre , 
+                   data = train_data, family = binomial())
+print(summary(logit_model))
+
+# Predict on test data
+predictions <- predict(logit_model, newdata = test_data, type = "response")
+predicted_class <- ifelse(predictions > 0.5, 1, 0)
+predicted_class <- factor(predicted_class, levels = levels(test_data$Hit))
+
+# Create a confusion matrix
+conf_matrix <- confusionMatrix(predicted_class, test_data$Hit)
+
+print(conf_matrix)
+# Load necessary libraries
+library(dplyr)
+library(caret)
+library(pROC)
+
+# [Previous code for data preparation, logistic regression model training, and predictions]
+
+# Calculate the ROC curve
+roc_obj <- roc(test_data$Hit, as.numeric(predictions))
+
+# Plot the ROC curve
+plot(roc_obj, main = "ROC Curve for Logistic Regression Model")
+
+# Print AUC (Area Under the Curve)
+auc(roc_obj)
+
+
+
+# Assuming you have 'predictions' and 'test_data$Hit' from your logistic regression model
+predicted_class <- ifelse(predictions > 0.5, "1", "0")
+predicted_class <- factor(predicted_class, levels = c("0", "1"))
+
+# Actual values
+actual_class <- test_data$Hit
+
+# Create a table for Actual vs Predicted
+confusion_matrix <- table(Predicted = predicted_class, Actual = actual_class)
+
+# Print the confusion matrix
+print(confusion_matrix)
+
+
+```
+
+We are using logistic regression model to predict if a games is hit or not based on the threshold value.
+we are using **Critic Score** , **Developer** and **Genre** as predicotrs.
+For making logistic model at first we are using binning function. Binning top developers because there are likely many unique developers in the dataset. Without binning, the model would have too many variables (one for each developer), many of which would have little data, leading to overfitting and making the model less generalizable. By binning, you reduce the complexity of the model and focus on the most common developers. 
+
+**Coefficients and p-values:**
+ These values represent the change in the log odds of the dependent variable (in your case, whether a game is a 'hit' or not) for a one-unit change in the predictor.
+ 
+**Critic_Score (Coefficient: 0.053450, p-value: < 2e-16)**
+* This is a highly significant predictor. The positive coefficient indicates that higher critic scores are associated with a higher likelihood of a game being a hit. The extremely low p-value suggests this relationship is statistically significant.
+
+
+**Developer456 (Coefficient: 0.865595, p-value: 0.04698)**
+
+* This specific developer (represented as 'Developer456') has a positive impact on the likelihood of a game being a hit. The p-value is just under 0.05, indicating that this result is statistically significant, although it's on the borderline.
+
+**GenreAdventure (Coefficient: -0.960955, p-value: 7.50e-05)**
+
+* Being an adventure game is associated with a lower likelihood of being a hit, as indicated by the negative coefficient. The p-value is very small, showing strong evidence against the null hypothesis.
+
+**GenrePuzzle (Coefficient: -0.824972, p-value: 0.00954)**
+
+Puzzle games are also less likely to be hits. The negative coefficient and its low p-value signify a strong and statistically significant relationship.
+
+**GenreRole-Playing (Coefficient: -0.344525, p-value: 0.00792)**
+
+* Role-Playing games have a negative coefficient, suggesting they are less likely to be hits compared to the baseline genre. The p-value indicates this finding is statistically significant.
+
+**GenreStrategy (Coefficient: -1.142691, p-value: 2.89e-07)**
+
+* Strategy games show a strong negative association with being a hit. The coefficient is significantly negative, and the very low p-value strongly supports its significance.
+
+
+**Null Devience:**
+
+* Null deviance shows the goodness of fit of a model with no predictors (only the intercept) and residual deviance shows the goodness of fit of your model. A lower residual deviance compared to the null deviance indicates that the model is a better fit than the null model.
+
+**Accuracy(0.7606):**
+* The above model has an accuracy of 76.06%, which means it correctly predicts whether a game is a hit or not 76.06% of the time.
+
+**Confusion Matrix:**
+
+* True Negatives (TN): 897 - The model correctly predicted the non-hit games.
+* False Positives (FP): 273 - The model incorrectly predicted these games as hits.
+* False Negatives (FN): 21 - The model incorrectly predicted these hits as non-hits.
+* True Positives (TP): 37 - The model correctly predicted the hit games.
+
+**Summary:**
+Based on the provided information, the logistic regression model exhibits an overall accuracy of 76.06%, which is higher than the no information rate, suggesting it has learned to predict better than a naive model. However, the model has a high sensitivity (97.71%) and low specificity (11.94%), indicating it is adept at predicting games that will not be hits (flops) but performs poorly in identifying successful hit games. The Area Under the Curve (AUC) of 0.7107 from the ROC analysis reveals a good discriminatory ability, but the model's prediction bias towards non-hits is also evident, as shown by the high number of false negatives. This suggests that while the model is quite conservative and effective in identifying non-hit games, it needs improvement to balance its predictive performance for both hits and non-hits
+
+
+
+
+
+
+
+
+
 ## References
 
 -Chen, H., & Hu, Y. (2020). The impact of marketing campaigns on video game sales: A meta-analysis. Journal of Marketing, 84(4), 124-143. https://www.sciencedirect.com/science/article/pii/S0148296320304161
