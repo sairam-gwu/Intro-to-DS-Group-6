@@ -314,7 +314,7 @@ Our initial approach involves developing predictive models that quantify global 
 
 
 
-## The classification problem
+## The Classification problem
 
 As we discovered, predicting the global sales as a numeric value is a challenging task due to the volatility and unpredictability of sales. While there are discernbale patterns on what makes a good game, the exact fluctuations in sales as a result of it are difficult to capture. Hence we move to a secondary approach.
 
@@ -333,8 +333,6 @@ The second approach involves adding a columns called 'Hit' which classifies the 
 -Lin, Y., & Wu, C. (2021). The impact of player demographics on video game sales: A segmentation analysis. Computers in Human Behavior, 118, 106653. https://www.researchgate.net/publication/31977403_Segmentation_of_the_games_market_using_multivariate_analysis
 
 -Duan, W., & Zhang, J. (2019). The impact of critic reviews on video game sales: Evidence from a large-scale panel dataset. Journal of Business Research, 104, 70-80. https://pubsonline.informs.org/doi/abs/10.1287/mnsc.2023.4754
-
--Bonferroni Correction - https://en.wikipedia.org/wiki/Bonferroni_correction
 
 -[OIS] Diez et al. (2015), OpenIntro Statistics.
 https://leanpub.com/os 
