@@ -34,7 +34,6 @@ setwd("C:/Users/saira/OneDrive/Documents/GitHub/Intro-to-DS-Group-6")
 
 ```{r}
 games<-read.csv('Video games sales.csv')
-str(games)
 
 ```
 
@@ -46,18 +45,21 @@ games$Genre<-as.factor(games$Genre)
 games$Publisher<-as.factor(games$Publisher)
 games$Developer<-as.factor(games$Developer)
 games$Rating<-as.factor(games$Rating)
-str(games)
+
 ```
 
 
 ```{r}
 games<-na.omit(games)
-unique(games$Rating)
+
+#unique(games$Rating)
+
 games$Rating <- ifelse( games$Rating== "", NA,games$Rating )
-unique(games$Rating)
+#unique(games$Rating)
+
 games<-subset(games,games$Rating!="NA")
 games<-subset(games,games$Year_of_Release!="N/A")
-nrow(games)
+#nrow(games)
 
 library(ezids)
 games_final= outlierKD2(games,Global_Sales,rm=TRUE,hist=FALSE)
@@ -294,96 +296,7 @@ ggplot(data, aes(x = Genre, y = Global_Sales)) +
 
 Continuing our investigation, we looked to dive into the trends of annual video game sales across different regions. Our objective is to unravel the dynamic patterns and shifts in the popularity of video game genres over time. By visualizing the data on a yearly basis, we aim to discern evolving consumer preferences, identify emerging trends, and gain insights into the changing landscape of the gaming industry. This exploration will provide valuable context for understanding the trajectory of video game sales in distinct regions and shed light on the trends that have shaped the market's evolution.
 
-```{r}
 
-
-
-```
-
-
-# Model Building
-
-With the comprehensive exploration of key elements influencing the success of video games, we are now ready to start the pivotal phase of model building. We aim to harness the power of machine learning models studies during our course to capture these trends and forecast the success of video games, focusing specifically on their global sales.rich insights gleaned from our exploratory analysis. 
-
-## The Regression problem
-
-Our initial approach involves developing predictive models that quantify global sales as a numeric value.
-
-### Linear Model
-
-
-
-
-## The Classification problem
-
-As we discovered, predicting the global sales as a numeric value is a challenging task due to the volatility and unpredictability of sales. While there are discernbale patterns on what makes a good game, the exact fluctuations in sales as a result of it are difficult to capture. Hence we move to a secondary approach.
-
-**Classifying Games as Hit or Miss**
-
-The second approach involves adding a columns called 'Hit' which classifies the game as a Hit or a Miss based on whether it lies in the top 25 percentile of games by global sales or not. This was decided based on the popularity of quantiles especially in boxplots in determining the upper echelon of video games.
-
-### Logistic Model
-
-### Decision Trees
-
-
-```{r}
-library(dplyr)
-library(ggplot2)
-games<-read.csv('Video games sales.csv')
-str(games)
-
-```
-
-```{r}
-
-games$Platform<-as.factor(games$Platform)
-games$Year_of_Release<-as.factor(games$Year_of_Release)
-games$Genre<-as.factor(games$Genre)
-games$Publisher<-as.factor(games$Publisher)
-games$Developer<-as.factor(games$Developer)
-games$Rating<-as.factor(games$Rating)
-str(games)
-```
-
-
-```{r}
-games<-na.omit(games)
-unique(games$Rating)
-games$Rating <- ifelse( games$Rating== "", NA,games$Rating )
-unique(games$Rating)
-games<-subset(games,games$Rating!="NA")
-games<-subset(games,games$Year_of_Release!="N/A")
-nrow(games)
-
-library(ezids)
-games_final= outlierKD2(games,Global_Sales,rm=TRUE,hist=FALSE)
-games_final<-na.omit(games_final)
-
-
-
-
-```
-
-
-```{r}
-
-games %>%
-  group_by(Genre) %>%
-  summarize(Total_Global_Sales = sum(Global_Sales)) %>%
-  ggplot(aes(x = reorder(Genre, Total_Global_Sales), y = Total_Global_Sales)) +
-  geom_bar(stat = "identity", fill = "green") +
-  coord_flip() +
-  theme_minimal() +
-  ggtitle("Global Sales by Game Genre")
-
-```
-
-The above graph represents the total global sales of video games, grouped by their genre.
-
-* Action games are the most popular, with total sales far exceeding the other genres with sales more than 1000.
-* Followed by Action genre sports are the second most popular genre , with sales around 750.
-* The least sold games we puzzles and strategy as we know most of these types of games are played by less amount of people
 
 
 ```{r}
@@ -425,6 +338,32 @@ print(na_genre_sales_plot)
 The graph displays the annual sales of the best-selling video game genres in North America, with each bar representing a specific year.
 
 *  A period dominated by action games might be followed by a surge in the popularity of sports games.
+
+
+
+# Model Building
+
+With the comprehensive exploration of key elements influencing the success of video games, we are now ready to start the pivotal phase of model building. We aim to harness the power of machine learning models studies during our course to capture these trends and forecast the success of video games, focusing specifically on their global sales.rich insights gleaned from our exploratory analysis. 
+
+## The Regression problem
+
+Our initial approach involves developing predictive models that quantify global sales as a numeric value.
+
+### Linear Model
+
+
+
+
+## The Classification problem
+
+As we discovered, predicting the global sales as a numeric value is a challenging task due to the volatility and unpredictability of sales. While there are discernbale patterns on what makes a good game, the exact fluctuations in sales as a result of it are difficult to capture. Hence we move to a secondary approach.
+
+**Classifying Games as Hit or Miss**
+
+The second approach involves adding a columns called 'Hit' which classifies the game as a Hit or a Miss based on whether it lies in the top 25 percentile of games by global sales or not. This was decided based on the popularity of quantiles especially in boxplots in determining the upper echelon of video games.
+
+### Logistic Model
+
 
 
 ```{r}
@@ -564,6 +503,68 @@ Based on the provided information, the logistic regression model exhibits an ove
 
 
 
+
+
+### Decision Trees
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+games<-read.csv('Video games sales.csv')
+str(games)
+
+```
+
+```{r}
+
+games$Platform<-as.factor(games$Platform)
+games$Year_of_Release<-as.factor(games$Year_of_Release)
+games$Genre<-as.factor(games$Genre)
+games$Publisher<-as.factor(games$Publisher)
+games$Developer<-as.factor(games$Developer)
+games$Rating<-as.factor(games$Rating)
+str(games)
+```
+
+
+```{r}
+games<-na.omit(games)
+unique(games$Rating)
+games$Rating <- ifelse( games$Rating== "", NA,games$Rating )
+unique(games$Rating)
+games<-subset(games,games$Rating!="NA")
+games<-subset(games,games$Year_of_Release!="N/A")
+nrow(games)
+
+library(ezids)
+games_final= outlierKD2(games,Global_Sales,rm=TRUE,hist=FALSE)
+games_final<-na.omit(games_final)
+
+
+
+
+```
+
+
+```{r}
+
+games %>%
+  group_by(Genre) %>%
+  summarize(Total_Global_Sales = sum(Global_Sales)) %>%
+  ggplot(aes(x = reorder(Genre, Total_Global_Sales), y = Total_Global_Sales)) +
+  geom_bar(stat = "identity", fill = "green") +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("Global Sales by Game Genre")
+
+```
+
+The above graph represents the total global sales of video games, grouped by their genre.
+
+* Action games are the most popular, with total sales far exceeding the other genres with sales more than 1000.
+* Followed by Action genre sports are the second most popular genre , with sales around 750.
+* The least sold games we puzzles and strategy as we know most of these types of games are played by less amount of people
 
 
 
