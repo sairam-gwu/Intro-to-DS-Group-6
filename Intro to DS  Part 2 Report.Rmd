@@ -577,7 +577,7 @@ str(games)
 ```{r}
 
 games$Platform<-as.factor(games$Platform)
-games$Year_of_Release<-as.factor(games$Year_of_Release)
+games$Year_of_Release<-as.numeric(games$Year_of_Release)
 games$Genre<-as.factor(games$Genre)
 games$Publisher<-as.factor(games$Publisher)
 games$Developer<-as.factor(games$Developer)
@@ -601,7 +601,6 @@ games_final<-na.omit(games_final)
 nrow(games_final)
 ```
 ```{r}
-install.packages("caTools")
 library(caTools)
 ```
 
@@ -618,7 +617,15 @@ testData <- subset(games_final, split == FALSE)
 ```
 
 
+```{r}
+model<-lm(Global_Sales~Critic_Score+User_Score+Genre+Year_of_Release,data=trainData)
 
+summary(model)
+```
+
+```{r}
+predictions <- predict(model, newData = testData)
+```
 
 
 ## References
