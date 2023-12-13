@@ -643,6 +643,22 @@ rSquaredTest <- 1 - (SSE/SST)
 rSquaredTest
 ```
 
+```{r}
+plot(model$fitted.values, resid(model))
+abline(h = 0, col = "red")
+```
+
+
+```{r}
+plot(model$fitted.values, sqrt(abs(resid(model))), 
+     ylab = "Sqrt(|Standardized Residuals|)", xlab = "Fitted values")
+```
+
+```{r}
+residuals <- model$residuals
+hist(residuals, breaks = 30, main = "Histogram of Residuals", xlab = "Residuals", col = "blue")
+abline(v = mean(residuals), col = "red", lwd = 2)
+```
 
 ## References
 
