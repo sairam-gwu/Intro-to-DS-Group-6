@@ -627,6 +627,22 @@ summary(model)
 predictions <- predict(model, newData = testData)
 ```
 
+```{r}
+mse <- mean((testData$Global_Sales - predictions)^2)
+rmse <- sqrt(mse)
+rmse
+```
+
+```{r}
+SSE <- sum((testData$Global_Sales - predictions)^2)
+SST <- sum((testData$Global_Sales - mean(testData$Global_Sales))^2)
+```
+
+```{r}
+rSquaredTest <- 1 - (SSE/SST)
+rSquaredTest
+```
+
 
 ## References
 
