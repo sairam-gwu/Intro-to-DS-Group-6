@@ -566,6 +566,56 @@ The above graph represents the total global sales of video games, grouped by the
 * Followed by Action genre sports are the second most popular genre , with sales around 750.
 * The least sold games we puzzles and strategy as we know most of these types of games are played by less amount of people
 
+# Linear Regression
+```{r}
+games<-read.csv('Video games sales.csv')
+str(games)
+
+```
+
+
+```{r}
+
+games$Platform<-as.factor(games$Platform)
+games$Year_of_Release<-as.factor(games$Year_of_Release)
+games$Genre<-as.factor(games$Genre)
+games$Publisher<-as.factor(games$Publisher)
+games$Developer<-as.factor(games$Developer)
+games$Rating<-as.factor(games$Rating)
+str(games)
+```
+
+
+```{r}
+games<-na.omit(games)
+unique(games$Rating)
+games$Rating <- ifelse( games$Rating== "", NA,games$Rating )
+unique(games$Rating)
+games<-subset(games,games$Rating!="NA")
+games<-subset(games,games$Year_of_Release!="N/A")
+
+
+library(ezids)
+games_final= outlierKD2(games,Global_Sales,rm=TRUE,hist=FALSE)
+games_final<-na.omit(games_final)
+nrow(games_final)
+```
+```{r}
+install.packages("caTools")
+library(caTools)
+```
+
+```{r}
+set.seed(123)  # Setting a seed for reproducibility
+split <- sample.split(games_final$Global_Sales, SplitRatio = 0.8)
+
+```
+
+
+```{r}
+trainData <- subset(games_final, split == TRUE)
+testData <- subset(games_final, split == FALSE)
+```
 
 
 
