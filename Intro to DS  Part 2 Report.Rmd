@@ -623,9 +623,24 @@ model<-lm(Global_Sales~Critic_Score+User_Score+Genre+Year_of_Release,data=trainD
 summary(model)
 ```
 
+
+The model aims to predict a dependent variable, likely related to video game sales, based on various independent variables like User_score,Critic_score,Genre and year of release
+
+#Coefficient
+The coefficients indicate the impact of each independent variable on the dependent variable. The independent variables  in the model such as Critic_Score,User_Score, and GenreStrategy have significant effects on video game sales
+
+# R square
+The R-squared value (0.1131) indicates that the model explains approximately 11.31% of the variance in the dependent variable.
+
+#Adj R Square
+The adjusted R-squared (0.1106) accounts for the number of predictors in the model.
+
 ```{r}
 predictions <- predict(model, newData = testData)
+
 ```
+
+
 
 ```{r}
 mse <- mean((testData$Global_Sales - predictions)^2)
@@ -643,6 +658,8 @@ rSquaredTest <- 1 - (SSE/SST)
 rSquaredTest
 ```
 
+An R-squared value of -3.385177 is unusual.egative R-squared values usually suggest that the model is performing worse than the Null model.Based on this R-squared value, the model is not considered good for explaining the variability in Global_Sales.
+
 ```{r}
 plot(model$fitted.values, resid(model))
 abline(h = 0, col = "red")
@@ -659,6 +676,9 @@ residuals <- model$residuals
 hist(residuals, breaks = 30, main = "Histogram of Residuals", xlab = "Residuals", col = "blue")
 abline(v = mean(residuals), col = "red", lwd = 2)
 ```
+
+In the graph we could see that the residuals are normaly distributed stating the assumptions of linear Regression model
+
 
 ## References
 
