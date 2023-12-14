@@ -75,12 +75,12 @@ games_final<-na.omit(games_final)
 
 # Introduction
 
-The video game industry is a multi-billion dollar industry that is still expanding in terms of both influence and popularity. People of all ages and backgrounds love playing video games, and they have a significant impact on our culture and society.Using information that has been scraped from Metacritic, this study will look at video game performance and sales. Metacritic is an online platform that compiles reviews from multiple sources for video games, films, TV series, and music. We can spot trends and obtain insightful knowledge about the video game industry by examining Metacritic data. 
+The video game industry is a multi-billion dollar industry that is still expanding in terms of both influence and popularity. People of all ages and backgrounds love playing video games, and they have a significant impact on our culture and society.Using information that has been scraped from Metacritic, 
 
 
 ## Objective
 
-This research project's goal is to analyze video game sales and performance data that was taken from Metacritic using exploratory data analysis (EDA) and hypothesis testing in order to identify patterns and trends in video game sales and performance. We aim to test hypotheses about the relationships between various variables, including release date, publisher, genre, metacritic scores, and platform. We also hope to learn about the elements that affect the success of video games and the video game business. 
+This research project's goal is to continue to explore multivariate relationships in the data and leverage machine learning models to predict a game's success based on its characteristics. At the end of our project, we hope to answer the question of "What makes a game successful?"
 
 ## Data Source
 
@@ -152,11 +152,11 @@ average_sales_multiple_platforms <- mean(multiple_platform_games$Global_Sales)
 average_rating_single_platform <- mean(single_platform_games$Critic_Score, na.rm = TRUE)
 average_rating_multiple_platforms <- mean(multiple_platform_games$Critic_Score, na.rm = TRUE)
 
-cat("Average Sales - Single Platform Games:", average_sales_single_platform, "\n")
-cat("Average Sales - Multiple Platform Games:", average_sales_multiple_platforms, "\n\n")
+#cat("Average Sales - Single Platform Games:", average_sales_single_platform, "\n")
+#cat("Average Sales - Multiple Platform Games:", average_sales_multiple_platforms, "\n\n")
 
-cat("Average Rating - Single Platform Games:", average_rating_single_platform, "\n")
-cat("Average Rating - Multiple Platform Games:", average_rating_multiple_platforms, "\n")
+#cat("Average Rating - Single Platform Games:", average_rating_single_platform, "\n")
+#cat("Average Rating - Multiple Platform Games:", average_rating_multiple_platforms, "\n")
 
 
 t_test_result <- t.test(single_platform_games$Global_Sales, multiple_platform_games$Global_Sales)
@@ -165,7 +165,7 @@ t_test_result <- t.test(single_platform_games$Global_Sales, multiple_platform_ga
 p_value_t_test <- t_test_result$p.value
 
 # Display p-value
-cat("P-value (t-test):", p_value_t_test, "\n")
+#cat("P-value (t-test):", p_value_t_test, "\n")
 
 
 combined_data <- rbind(data.frame(Sales = single_platform_games$Global_Sales, Platform = "Single Platform"),
@@ -296,6 +296,10 @@ ggplot(data, aes(x = Genre, y = Global_Sales)) +
 
 ```
 
+
+* Action games are the most popular, with total sales far exceeding the other genres with sales more than 1000.
+* Followed by Action genre sports are the second most popular genre , with sales around 750.
+* The least sold games we puzzles and strategy as we know most of these types of games are played by less amount of people
 
 ## Yearly Sales by Region and Genre
 
@@ -443,13 +447,13 @@ summary(model)
 
 The model aims to predict a dependent variable, likely related to video game sales, based on various independent variables like User_score,Critic_score,Genre and year of release
 
-#Coefficient
+**Coefficient**
 The coefficients indicate the impact of each independent variable on the dependent variable. The independent variables  in the model such as Critic_Score,User_Score, and GenreStrategy have significant effects on video game sales
 
-# R square
+**R square**
 The R-squared value (0.1131) indicates that the model explains approximately 11.31% of the variance in the dependent variable.
 
-#Adj R Square
+**Adj R Square**
 The adjusted R-squared (0.1106) accounts for the number of predictors in the model.
 
 ```{r}
@@ -694,137 +698,7 @@ games_final<-na.omit(games_final)
 ```
 
 
-```{r}
 
-games %>%
-  group_by(Genre) %>%
-  summarize(Total_Global_Sales = sum(Global_Sales)) %>%
-  ggplot(aes(x = reorder(Genre, Total_Global_Sales), y = Total_Global_Sales)) +
-  geom_bar(stat = "identity", fill = "green") +
-  coord_flip() +
-  theme_minimal() +
-  ggtitle("Global Sales by Game Genre")
-
-```
-
-The above graph represents the total global sales of video games, grouped by their genre.
-
-* Action games are the most popular, with total sales far exceeding the other genres with sales more than 1000.
-* Followed by Action genre sports are the second most popular genre , with sales around 750.
-* The least sold games we puzzles and strategy as we know most of these types of games are played by less amount of people
-
-# Linear Regression
-```{r}
-games<-read.csv('Video games sales.csv')
-str(games)
-
-```
-
-
-```{r}
-
-games$Platform<-as.factor(games$Platform)
-games$Year_of_Release<-as.numeric(games$Year_of_Release)
-games$Genre<-as.factor(games$Genre)
-games$Publisher<-as.factor(games$Publisher)
-games$Developer<-as.factor(games$Developer)
-games$Rating<-as.factor(games$Rating)
-str(games)
-```
-
-
-```{r}
-games<-na.omit(games)
-unique(games$Rating)
-games$Rating <- ifelse( games$Rating== "", NA,games$Rating )
-unique(games$Rating)
-games<-subset(games,games$Rating!="NA")
-games<-subset(games,games$Year_of_Release!="N/A")
-
-
-library(ezids)
-games_final= outlierKD2(games,Global_Sales,rm=TRUE,hist=FALSE)
-games_final<-na.omit(games_final)
-nrow(games_final)
-```
-```{r}
-library(caTools)
-```
-
-```{r}
-set.seed(123)  # Setting a seed for reproducibility
-split <- sample.split(games_final$Global_Sales, SplitRatio = 0.8)
-
-```
-
-
-```{r}
-trainData <- subset(games_final, split == TRUE)
-testData <- subset(games_final, split == FALSE)
-```
-
-
-```{r}
-model<-lm(Global_Sales~Critic_Score+User_Score+Genre+Year_of_Release,data=trainData)
-
-summary(model)
-```
-
-
-The model aims to predict a dependent variable, likely related to video game sales, based on various independent variables like User_score,Critic_score,Genre and year of release
-
-#Coefficient
-The coefficients indicate the impact of each independent variable on the dependent variable. The independent variables  in the model such as Critic_Score,User_Score, and GenreStrategy have significant effects on video game sales
-
-# R square
-The R-squared value (0.1131) indicates that the model explains approximately 11.31% of the variance in the dependent variable.
-
-#Adj R Square
-The adjusted R-squared (0.1106) accounts for the number of predictors in the model.
-
-```{r}
-predictions <- predict(model, newData = testData)
-
-```
-
-
-
-```{r}
-mse <- mean((testData$Global_Sales - predictions)^2)
-rmse <- sqrt(mse)
-rmse
-```
-
-```{r}
-SSE <- sum((testData$Global_Sales - predictions)^2)
-SST <- sum((testData$Global_Sales - mean(testData$Global_Sales))^2)
-```
-
-```{r}
-rSquaredTest <- 1 - (SSE/SST)
-rSquaredTest
-```
-
-An R-squared value of -3.385177 is unusual.egative R-squared values usually suggest that the model is performing worse than the Null model.Based on this R-squared value, the model is not considered good for explaining the variability in Global_Sales.
-
-```{r}
-plot(model$fitted.values, resid(model))
-abline(h = 0, col = "red")
-```
-
-
-```{r}
-plot(model$fitted.values, sqrt(abs(resid(model))), 
-     ylab = "Sqrt(|Standardized Residuals|)", xlab = "Fitted values")
-```
-
-```{r}
-residuals <- model$residuals
-hist(residuals, breaks = 30, main = "Histogram of Residuals", xlab = "Residuals", col = "blue")
-abline(v = mean(residuals), col = "red", lwd = 2)
-```
-
-In the graph we could see that the residuals are normaly distributed stating the assumptions of linear Regression model
 
 
 ## References
