@@ -31,43 +31,7 @@ library(dplyr)
 ```
 
 
-```{r}
-games<-read.csv('Video games sales.csv')
 
-```
-
-```{r}
-
-games$Platform<-as.factor(games$Platform)
-games$Year_of_Release<-as.factor(games$Year_of_Release)
-games$Genre<-as.factor(games$Genre)
-games$Publisher<-as.factor(games$Publisher)
-games$Developer<-as.factor(games$Developer)
-games$Rating<-as.factor(games$Rating)
-
-```
-
-
-```{r}
-games<-na.omit(games)
-
-#unique(games$Rating)
-
-games$Rating <- ifelse( games$Rating== "", NA,games$Rating )
-#unique(games$Rating)
-
-games<-subset(games,games$Rating!="NA")
-games<-subset(games,games$Year_of_Release!="N/A")
-#nrow(games)
-
-library(ezids)
-games_final= outlierKD2(games,Global_Sales,rm=TRUE,hist=FALSE)
-games_final<-na.omit(games_final)
-
-
-
-
-```
 
 
 
@@ -116,10 +80,70 @@ Japan: The number of units sold in Japan
 
 Global: The total number of units sold worldwide 
 
+```{r}
+games<-read.csv('Video games sales.csv')
+
+```
+
+```{r}
+
+games$Platform<-as.factor(games$Platform)
+games$Year_of_Release<-as.factor(games$Year_of_Release)
+games$Genre<-as.factor(games$Genre)
+games$Publisher<-as.factor(games$Publisher)
+games$Developer<-as.factor(games$Developer)
+games$Rating<-as.factor(games$Rating)
+
+```
+
+
+```{r}
+games<-na.omit(games)
+
+games$Rating <- ifelse( games$Rating== "", NA,games$Rating )
+games<-subset(games,games$Rating!="NA")
+games<-subset(games,games$Year_of_Release!="N/A")
+
+library(ezids)
+games_final= outlierKD2(games,Global_Sales,rm=TRUE,hist=FALSE)
+games_final<-na.omit(games_final)
+
+```
+
 
 # Exploratory Data Analysis
 
-## Variable Correlation
+##corrl
+
+```{r}
+numerical_data <- data[, sapply(data, is.numeric)]
+
+# Calculate the correlation matrix
+correlation_matrix <- cor(numerical_data, use = "pairwise.complete.obs")
+
+# Print the correlation matrix
+print(correlation_matrix)
+```
+
+```{r}
+ if (!require(corrplot)) {
+    install.packages("corrplot")
+}
+library(corrplot)
+
+
+
+# Select only numerical columns for the correlation matrix
+numerical_data <- games_final[, sapply(data, is.numeric)]
+
+# Calculate the correlation matrix
+cor_matrix <- cor(numerical_data, use = "pairwise.complete.obs")
+
+# Plot the correlation matrix
+corrplot(cor_matrix, method = "circle")
+
+```
+
 
 ## Single Platform vs Multi Platform comparison
 
@@ -346,7 +370,7 @@ The graph displays the annual sales of the best-selling video game genres in Nor
 
 *  A period dominated by action games might be followed by a surge in the popularity of sports games.
 
-# Critic_Score Vs Sales
+## Critic_Score Vs Sales
 
 ```{r}
 library(ggplot2)
@@ -356,12 +380,26 @@ ggplot(games_final, aes(x = Critic_Score, y = NA_Sales)) +
   labs(title = "Scatter Plot: Critic_Score vs. NA Sales",
        x = "Critic_Score",
        y = "NA Sales")
+```
+
+critic Score Vs NA Sales
+The spread is slightly more even, with a few games receiving high critic scores also achieving higher sales, but the overall trend seems to suggest that critic scores do not guarantee high sales.
+
+```{r}
+
 
 ggplot(games_final, aes(x = Critic_Score, y = EU_Sales)) +
   geom_point(color = "blue", size = 3) +
   labs(title = "Scatter Plot: Critic_Score vs. EU Sales",
        x = "Critic_Score",
        y = "EU Sales")
+```
+
+critic Score Vs EU Sales
+The European sales scatter plot indicates many games with lower sales figures across the spectrum of critic scores.There is a concentration of data points at the lower end of sales regardless of the critic score, suggesting many games have low sales figures despite varied reviews. A few data points with higher sales can be seen, implying that some well-reviewed games also achieve high sales
+
+
+```{r}
 
 ggplot(games_final, aes(x = Critic_Score, y = JP_Sales)) +
   geom_point(color = "blue", size = 3) +
@@ -369,6 +407,13 @@ ggplot(games_final, aes(x = Critic_Score, y = JP_Sales)) +
        x = "Critic_Score",
        y = "JP Sales")
 
+```
+
+
+critic score Vs Jp Sales
+The Japanese market scatter plot shows a more pronounced cluster of games with low sales, and there is a slightly higher concentration of games with higher critic scores that do not have corresponding high sales. This suggests a less strong correlation between critic scores and sales in Japan compared to North America and Europe.
+
+```{r}
 ggplot(games_final, aes(x = Critic_Score, y =Global_Sales)) +
   geom_point(color = "blue", size = 3) +
   labs(title = "Scatter Plot: critic_score vs. Global_ Sales",
@@ -376,17 +421,10 @@ ggplot(games_final, aes(x = Critic_Score, y =Global_Sales)) +
        y = "Global_Sales")
 ```
 
-#critic Score Vs NA Sales
-The spread is slightly more even, with a few games receiving high critic scores also achieving higher sales, but the overall trend seems to suggest that critic scores do not guarantee high sales.
 
-#critic Score Vs NA Sales
-The European sales scatter plot indicates many games with lower sales figures across the spectrum of critic scores.There is a concentration of data points at the lower end of sales regardless of the critic score, suggesting many games have low sales figures despite varied reviews. A few data points with higher sales can be seen, implying that some well-reviewed games also achieve high sales
-
-#critic score Vs Jp Sales
-The Japanese market scatter plot shows a more pronounced cluster of games with low sales, and there is a slightly higher concentration of games with higher critic scores that do not have corresponding high sales. This suggests a less strong correlation between critic scores and sales in Japan compared to North America and Europe.
-
-#critic Score Vs Global Sales
+critic Score Vs Global Sales
 The global sales scatter plot aggregates the data from all regions, showing a broad distribution of sales and critic scores. While there's a visible trend that higher critic scores can correlate with higher sales
+
 
 
 # Model Building
@@ -400,13 +438,6 @@ Our initial approach involves developing predictive models that quantify global 
 ### Linear Model
 ```{r}
 games<-read.csv('Video games sales.csv')
-str(games)
-
-```
-
-
-```{r}
-
 games$Platform<-as.factor(games$Platform)
 games$Year_of_Release<-as.numeric(games$Year_of_Release)
 games$Genre<-as.factor(games$Genre)
@@ -414,7 +445,9 @@ games$Publisher<-as.factor(games$Publisher)
 games$Developer<-as.factor(games$Developer)
 games$Rating<-as.factor(games$Rating)
 str(games)
+
 ```
+
 
 
 ```{r}
@@ -434,19 +467,13 @@ nrow(games_final)
 
 ```{r}
 library(caTools)
-```
-
-```{r}
 set.seed(123)  # Setting a seed for reproducibility
 split <- sample.split(games_final$Global_Sales, SplitRatio = 0.8)
-
-```
-
-
-```{r}
 trainData <- subset(games_final, split == TRUE)
 testData <- subset(games_final, split == FALSE)
 ```
+
+
 
 
 ```{r}
@@ -469,7 +496,6 @@ The adjusted R-squared (0.1106) accounts for the number of predictors in the mod
 
 ```{r}
 predictions <- predict(model, newData = testData)
-
 ```
 
 
@@ -483,9 +509,6 @@ rmse
 ```{r}
 SSE <- sum((testData$Global_Sales - predictions)^2)
 SST <- sum((testData$Global_Sales - mean(testData$Global_Sales))^2)
-```
-
-```{r}
 rSquaredTest <- 1 - (SSE/SST)
 rSquaredTest
 ```
@@ -662,11 +685,6 @@ Based on the provided information, the logistic regression model exhibits an ove
 library(dplyr)
 library(ggplot2)
 games<-read.csv('Video games sales.csv')
-str(games)
-
-```
-
-```{r}
 
 games$Platform<-as.factor(games$Platform)
 games$Year_of_Release<-as.factor(games$Year_of_Release)
@@ -676,6 +694,8 @@ games$Developer<-as.factor(games$Developer)
 games$Rating<-as.factor(games$Rating)
 str(games)
 ```
+
+
 
 
 ```{r}
@@ -728,7 +748,7 @@ tree_model <- rpart(Hit ~ Critic_Score + User_Score + Developer + Genre+Platform
                     data = train_data, method = "class")
 
 
-rpart.plot(tree_model, extra = 101, under = TRUE, cex = 0.8, tweak = 1.2)
+rpart.plot(tree_model, extra = 101, under = TRUE, cex = 0.8)
 
 ```
 
