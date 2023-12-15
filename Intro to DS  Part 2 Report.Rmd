@@ -28,8 +28,6 @@ library(ezids)
 library(ggplot2)
 library(dplyr)
 
-setwd("C:/Users/saira/OneDrive/Documents/GitHub/Intro-to-DS-Group-6")
-
 ```
 
 
@@ -378,6 +376,18 @@ ggplot(games_final, aes(x = Critic_Score, y =Global_Sales)) +
        y = "Global_Sales")
 ```
 
+#critic Score Vs NA Sales
+The spread is slightly more even, with a few games receiving high critic scores also achieving higher sales, but the overall trend seems to suggest that critic scores do not guarantee high sales.
+
+#critic Score Vs NA Sales
+The European sales scatter plot indicates many games with lower sales figures across the spectrum of critic scores.There is a concentration of data points at the lower end of sales regardless of the critic score, suggesting many games have low sales figures despite varied reviews. A few data points with higher sales can be seen, implying that some well-reviewed games also achieve high sales
+
+#critic score Vs Jp Sales
+The Japanese market scatter plot shows a more pronounced cluster of games with low sales, and there is a slightly higher concentration of games with higher critic scores that do not have corresponding high sales. This suggests a less strong correlation between critic scores and sales in Japan compared to North America and Europe.
+
+#critic Score Vs Global Sales
+The global sales scatter plot aggregates the data from all regions, showing a broad distribution of sales and critic scores. While there's a visible trend that higher critic scores can correlate with higher sales
+
 
 # Model Building
 
@@ -421,6 +431,7 @@ games_final= outlierKD2(games,Global_Sales,rm=TRUE,hist=FALSE)
 games_final<-na.omit(games_final)
 nrow(games_final)
 ```
+
 ```{r}
 library(caTools)
 ```
@@ -479,18 +490,9 @@ rSquaredTest <- 1 - (SSE/SST)
 rSquaredTest
 ```
 
-An R-squared value of -3.385177 is unusual.egative R-squared values usually suggest that the model is performing worse than the Null model.Based on this R-squared value, the model is not considered good for explaining the variability in Global_Sales.
-
-```{r}
-plot(model$fitted.values, resid(model))
-abline(h = 0, col = "red")
-```
+An R-squared value of -3.385177 is unusual.Negative R-squared values usually suggest that the model is performing worse than the Null model.Based on this R-squared value, the model is not considered good for explaining the variability in Global_Sales.
 
 
-```{r}
-plot(model$fitted.values, sqrt(abs(resid(model))), 
-     ylab = "Sqrt(|Standardized Residuals|)", xlab = "Fitted values")
-```
 
 ```{r}
 residuals <- model$residuals
@@ -499,9 +501,6 @@ abline(v = mean(residuals), col = "red", lwd = 2)
 ```
 
 In the graph we could see that the residuals are normaly distributed stating the assumptions of linear Regression model
-
-
-
 
 
 
@@ -698,7 +697,40 @@ games_final<-na.omit(games_final)
 ```
 
 
+```{r}
+library(dplyr)
+library(caret)
+library(rpart)
+library(rpart.plot)
+hit_threshold <- quantile(data$Global_Sales, 0.75)
+data$Hit <- ifelse(data$Global_Sales > hit_threshold, 1, 0)
 
+bin_categories <- function(column, top_n) {
+  counts <- table(column)
+  top_categories <- names(sort(counts, decreasing = TRUE)[1:top_n])
+  column_binned <- ifelse(column %in% top_categories, column, "Others")
+  return(column_binned)
+}
+
+data$Developer <- bin_categories(data$Developer, top_n = 10)
+
+data$Publisher <- bin_categories(data$Publisher, top_n = 10)
+
+data$Platform <- bin_categories(data$Platform, top_n = 10)
+
+set.seed(123) 
+index <- createDataPartition(data$Hit, p = 0.8, list = FALSE)
+train_data <- data[index, ]
+test_data <- data[-index, ]
+
+
+tree_model <- rpart(Hit ~ Critic_Score + User_Score + Developer + Genre+Platform, 
+                    data = train_data, method = "class")
+
+
+rpart.plot(tree_model, extra = 101, under = TRUE, cex = 0.8, tweak = 1.2)
+
+```
 
 
 ## References
